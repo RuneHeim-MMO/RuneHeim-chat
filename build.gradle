@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'org.zuma'
@@ -15,10 +16,22 @@ repositories {
 }
 
 dependencies {
+    implementation 'net.openhft:zero-allocation-hashing:0.27ea1'
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly files('libs/RuneHeim-core-1.0-SNAPSHOT.jar')
 }
 
 tasks {
+    shadowJar {
+        archiveBaseName.set("${project.name}-${project.version}")
+        archiveClassifier.set("") // important: removes "-all" suffix
+        destinationDirectory.set(file("/home/sp/Desktop/Servert/plugins")) // drop directly in plugins
+        mergeServiceFiles() // if needed
+    }
+
+    build {
+        dependsOn shadowJar
+    }
     tasks.jar {
         destinationDirectory.set(file("/home/sp/Desktop/Servert/plugins"))
         archiveFileName.set("${project.name}-${project.version}.jar")

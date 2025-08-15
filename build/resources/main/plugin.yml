@@ -1,4 +1,6 @@
 name: RuneHeim-chat
 version: '1.0-SNAPSHOT'
-main: org.zuma.runeHeimChat.RuneHeimChat
+main: org.zuma.runeHeim.RuneHeimChat
 api-version: '1.21'
+depend:
+  - RuneQuest-Core
