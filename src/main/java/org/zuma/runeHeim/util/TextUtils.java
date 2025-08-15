@@ -4,6 +4,25 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
 public class TextUtils {
+    public static TextColor getDistanceColor(double distance, double maxDistance) {
+        // Clamp distance
+        if (distance < 0) distance = 0;
+        if (distance > maxDistance) distance = maxDistance;
+
+        // Start color: 191,191,191
+        // End color: 30,30,30
+        int start = 240;
+        int end = 30;
+
+        double factor = distance / maxDistance;
+
+        int r = (int) (start + factor * (end - start));
+        int g = (int) (start + factor * (end - start));
+        int b = (int) (start + factor * (end - start));
+
+        return TextColor.color(r, g, b);
+    }
+
     public static Component getLevelGradientComponent(int level) {
         // Gradient stops
         int[] stops = {10, 25, 50, 75, 100};
