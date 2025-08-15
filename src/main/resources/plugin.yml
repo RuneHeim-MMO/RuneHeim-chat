@@ -1,0 +1,4 @@
+name: RuneHeim-chat
+version: '1.0-SNAPSHOT'
+main: org.zuma.runeHeim.RuneHeimChat
+api-version: '1.21'
