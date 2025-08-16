@@ -10,9 +10,12 @@ import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.logger.constants.LogLevel;
 import org.zuma.examplePlugin.core.utils.MathUtils;
+import org.zuma.examplePlugin.core.utils.XpUtils;
 import org.zuma.examplePlugin.domain.hud.HudService;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
+import org.zuma.examplePlugin.events.player.RunePlayerLevelUpEvent;
 import org.zuma.runeHeim.RuneHeimChat;
+import org.zuma.runeHeim.events.RuneChatEvent;
 import org.zuma.runeHeim.util.HudUtils;
 import org.zuma.runeHeim.util.TextUtils;
 
@@ -35,7 +38,10 @@ public class ChatHandler {
             });
         }
 
-        Component censoredMessage = handleProfanityCensoring(event.message(), senderRunePlayer, sender);
+        String plainMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
+        String censoredMessage = handleProfanityCensoring(plainMessage, senderRunePlayer, sender);
+
+        broadcastChatEvent(sender, censoredMessage);
 
         event.renderer((source, originalName, message, viewer) -> {
             Double distance = 0.0;
@@ -46,7 +52,7 @@ public class ChatHandler {
             }
 
             // Distance colorizing
-            Component finalMessage = censoredMessage.color(TextUtils.getDistanceColor(distance, CHAT_DISTANCE_THRESHOLD));
+            Component finalMessage = Component.text(censoredMessage).color(TextUtils.getDistanceColor(distance, CHAT_DISTANCE_THRESHOLD));
 
             // Console logging
             if (viewer instanceof ConsoleCommandSender) {
@@ -57,10 +63,19 @@ public class ChatHandler {
         });
     }
 
-    public static Component handleProfanityCensoring(Component originalMessage, RunePlayer sender, Player bukkitSender) {
-        String plainMessage = PlainTextComponentSerializer.plainText().serialize(originalMessage);
+    private static void broadcastChatEvent(Player sender, String message) {
+        Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
+            RuneChatEvent chatEvent = new RuneChatEvent(new RuneChatEvent.Payload(sender.getName(), sender.getUniqueId(), message));
+            Bukkit.getServer().getPluginManager().callEvent(chatEvent);
+        });
+    }
+
+    public static String handleProfanityCensoring(String plainMessage, RunePlayer sender, Player bukkitSender) {
+        if (bukkitSender.hasPermission("runeheim.profanity")) {
+            return plainMessage;
+        }
+
         Map.Entry<String, Boolean> profanityResult = ProfanityFilter.censorBadWords(plainMessage);
-        Component censoredMessage = Component.text(profanityResult.getKey());
 
         if (profanityResult.getValue()) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
@@ -70,7 +85,7 @@ public class ChatHandler {
             });
         }
 
-        return censoredMessage;
+        return profanityResult.getKey();
     }
 
     public static Map<UUID, Double> calculateViewerDistances(AsyncChatEvent event, Player sender) {

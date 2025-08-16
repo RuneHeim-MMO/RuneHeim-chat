@@ -23,7 +23,7 @@ dependencies {
 
 tasks {
     shadowJar {
-        archiveBaseName.set("${project.name}-${project.version}")
+        archiveBaseName.set(project.name)
         archiveClassifier.set("") // important: removes "-all" suffix
         destinationDirectory.set(file("/home/sp/Desktop/Servert/plugins")) // drop directly in plugins
         mergeServiceFiles() // if needed
