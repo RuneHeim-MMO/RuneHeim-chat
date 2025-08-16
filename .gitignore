@@ -1,0 +1,45 @@
+# Gradle build files
+.gradle/
+build/
+
+# Gradle Wrapper files
+!gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+*.sw?
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Java
+*.class
+*.log
+gradle-wrapper.jar
+*.war
+*.ear
+
+# Environment files
+.env
+
+# Test reports
+test-results/
+test-output/
+out/
+
+# Others
+*.tmp
+*.bak
+*.swp
