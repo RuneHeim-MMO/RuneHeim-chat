@@ -16,6 +16,7 @@ import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.examplePlugin.events.player.RunePlayerLevelUpEvent;
 import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.events.RuneChatEvent;
+import org.zuma.runeHeim.events.RuneChatGlobalBroadcasterStateUpdate;
 import org.zuma.runeHeim.util.HudUtils;
 import org.zuma.runeHeim.util.TextUtils;
 
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 public class ChatHandler {
     public final static int CHAT_DISTANCE_THRESHOLD = 255;
+    private static boolean sendGlobalChatEvents = false;
 
     public static void handleChatEvent(AsyncChatEvent event, Player sender, RunePlayer senderRunePlayer) {
         Map<UUID, Double> otherPlayerDistances = calculateViewerDistances(event, sender);
@@ -64,6 +66,10 @@ public class ChatHandler {
     }
 
     private static void broadcastChatEvent(Player sender, String message) {
+        if (!sendGlobalChatEvents) {
+            return;
+        }
+
         Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
             RuneChatEvent chatEvent = new RuneChatEvent(new RuneChatEvent.Payload(sender.getName(), sender.getUniqueId(), message));
             Bukkit.getServer().getPluginManager().callEvent(chatEvent);
@@ -121,5 +127,14 @@ public class ChatHandler {
         }
 
         return visiblePlayers;
+    }
+
+    public boolean isSendingGlobalChatEvents() {
+        return sendGlobalChatEvents;
+    }
+
+    public static void setSendGlobalChatEvents(boolean sendGlobalChatEvents) {
+        ChatHandler.sendGlobalChatEvents = sendGlobalChatEvents;
+        System.out.println("set this instance global chat event " + sendGlobalChatEvents);
     }
 }

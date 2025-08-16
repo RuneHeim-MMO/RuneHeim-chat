@@ -24,11 +24,6 @@ public class RuneChatEvent extends RedisEvent<RuneChatEvent.Payload> {
     }
 
     @Override
-    protected Class<Payload> getPayloadClass() {
-        return RuneChatEvent.Payload.class;
-    }
-
-    @Override
     public Payload composePayload() {
         return payload;
 
