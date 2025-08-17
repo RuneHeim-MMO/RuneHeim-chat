@@ -30,6 +30,7 @@ public final class RuneHeimChat extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        GlobalEventHandler.clearHandlers();
         RuneQuestPlugin.getRuneLogger().log(LogLevel.INFO, "Chat disabled.");
     }
 
