@@ -30,11 +30,15 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Clean and build with Gradle
+        run: ./gradlew clean build
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: RuneHeim-core
+          name: RuneHeim-chat
           path: build/libs/*.jar
+
+      - name: Send HTTP POST to Minecraft Hook
+        run: |
+          curl -X POST "http://65.21.193.214:82/restart?key=${{ secrets.WEB_HOOK_SECRET }}&seconds=300&reason=Chat%20Update&sender=Github_actions"

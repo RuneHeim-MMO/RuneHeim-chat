@@ -15,6 +15,8 @@ repositories {
     }
 }
 
+build.dependsOn shadowJar
+
 dependencies {
     implementation 'net.openhft:zero-allocation-hashing:0.27ea1'
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
@@ -22,19 +24,11 @@ dependencies {
 }
 
 tasks {
-    shadowJar {
-        archiveBaseName.set(project.name)
-        archiveClassifier.set("") // important: removes "-all" suffix
-        destinationDirectory.set(file("/home/sp/Desktop/Servert/plugins")) // drop directly in plugins
-        mergeServiceFiles() // if needed
-    }
-
-    build {
-        dependsOn shadowJar
+    tasks.named("shadowJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
+        archiveFileName.set("${project.name}-${project.version}.jar")
     }
     tasks.jar {
-        destinationDirectory.set(file("/home/sp/Desktop/Servert/plugins"))
-        archiveFileName.set("${project.name}-${project.version}.jar")
+        enabled = false
     }
     runServer {
         // Configure the Minecraft version for our task.
