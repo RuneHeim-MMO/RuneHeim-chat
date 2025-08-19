@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
@@ -26,6 +28,12 @@ dependencies {
 tasks {
     tasks.named("shadowJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
         archiveFileName.set("${project.name}-${project.version}.jar")
+    }
+    tasks.register("devBuild", ShadowJar) {
+        archiveFileName.set("dev-chat.jar")
+        destinationDirectory.set(file("/home/sp/Desktop/ServerDocker/server/plugins"))
+        from sourceSets.main.output
+        configurations = [project.configurations.runtimeClasspath]
     }
     tasks.jar {
         enabled = false
