@@ -1,4 +1,4 @@
-name: Build Minecraft Plugin
+name: Build & Deploy
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  compile:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,7 +37,10 @@ jobs:
         with:
           name: RuneHeim-chat
           path: build/libs/*.jar
-
+  push:
+    runs-on: ubuntu-latest
+    needs: compile
+    steps:
       - name: Send HTTP POST to Minecraft Hook
         run: |
           curl --max-time 30 -X POST "http://65.21.193.214:81/restart?key=${{ secrets.WEB_HOOK_SECRET }}&seconds=300&reason=Chat%20Update&sender=Github_actions"
