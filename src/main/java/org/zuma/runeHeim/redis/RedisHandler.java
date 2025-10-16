@@ -1,22 +1,16 @@
 package org.zuma.runeHeim.redis;
 
-import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.redis.GlobalEventHandler;
 import org.zuma.runeHeim.chat.ChatHandler;
-import org.zuma.runeHeim.events.RuneChatEvent;
-import org.zuma.runeHeim.events.RuneChatGlobalBroadcasterStateUpdate;
+import org.zuma.runeHeim.events.RuneGlobalChatEvent;
 
 public class RedisHandler {
 
     public static void registerEvents() {
-        GlobalEventHandler.registerEvent(RuneChatGlobalBroadcasterStateUpdate.class, RuneChatGlobalBroadcasterStateUpdate.Payload.class);
-        GlobalEventHandler.registerEvent(RuneChatEvent.class, RuneChatEvent.Payload.class);
+        GlobalEventHandler.registerEvent(RuneGlobalChatEvent.class, RuneGlobalChatEvent.Payload.class);
 
-    }
-
-    public static void startGlobalEventListener() {
-        GlobalEventHandler.addListener(RuneChatGlobalBroadcasterStateUpdate.class, payload -> {
-            ChatHandler.setSendGlobalChatEvents(payload.sendGlobalEvents);
+        GlobalEventHandler.addListener(RuneGlobalChatEvent.class, payload -> {
+            ChatHandler.onGlobalChat(payload.serverId, payload.senderName, payload.content);
         });
     }
 }

@@ -26,12 +26,12 @@ dependencies {
 }
 
 tasks {
-    tasks.named("shadowJar", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
+    tasks.named("shadowJar", ShadowJar).configure {
         archiveFileName.set("${project.name}-${project.version}.jar")
     }
     tasks.register("devBuild", ShadowJar) {
         archiveFileName.set("dev-chat.jar")
-        destinationDirectory.set(file("/home/sp/Desktop/ServerDocker/server/plugins"))
+        destinationDirectory.set(file("/home/sp/Desktop/RuneHeim/game-server-template/server/plugins"))
         from sourceSets.main.output
         configurations = [project.configurations.runtimeClasspath]
     }

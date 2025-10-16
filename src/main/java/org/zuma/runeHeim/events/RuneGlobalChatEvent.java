@@ -4,10 +4,10 @@ import org.zuma.examplePlugin.core.redis.RedisEvent;
 
 import java.util.UUID;
 
-public class RuneChatEvent extends RedisEvent<RuneChatEvent.Payload> {
+public class RuneGlobalChatEvent extends RedisEvent<RuneGlobalChatEvent.Payload> {
     private final Payload payload;
 
-    public RuneChatEvent(Payload payload) {
+    public RuneGlobalChatEvent(Payload payload) {
         this.payload = payload;
     }
 
@@ -26,6 +26,5 @@ public class RuneChatEvent extends RedisEvent<RuneChatEvent.Payload> {
     @Override
     public Payload composePayload() {
         return payload;
-
     }
 }
