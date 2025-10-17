@@ -9,10 +9,11 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.zuma.examplePlugin.RuneQuestPlugin;
+import org.zuma.examplePlugin.core.constants.Color;
 import org.zuma.examplePlugin.core.logger.constants.LogLevel;
 import org.zuma.examplePlugin.core.utils.MathUtils;
+import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.hud.HudService;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.runeHeim.ProximityMode;
@@ -21,15 +22,24 @@ import org.zuma.runeHeim.events.RuneGlobalChatEvent;
 import org.zuma.runeHeim.util.HudUtils;
 import org.zuma.runeHeim.util.TextUtils;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ChatHandler {
+    private final static CooldownHandler cooldownHandler = new CooldownHandler();
     public final static int CHAT_DISTANCE_THRESHOLD = 255;
 
     public static void handleChatEvent(AsyncChatEvent event, Player sender, RunePlayer senderRunePlayer, ProximityManager proximityManager) {
+        if (!senderRunePlayer.asBukkitPlayer().hasPermission("runeheim.chat.cooldown")) {
+            if (cooldownHandler.isCooldownInProgress(senderRunePlayer)) {
+                sender.sendMessage(Component.text("You are sending messages too quickly.", Color.ERROR.asColor()));
+                cooldownHandler.startCooldown(senderRunePlayer, 2000L);
+                return;
+            }
+
+            cooldownHandler.startCooldown(senderRunePlayer, 2000L);
+        }
+
         Map<UUID, Double> otherPlayerDistances = calculateViewerDistances(event, sender);
         String plainMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
         ProximityMode senderProximityMode = proximityManager.getMode(sender.getUniqueId());
@@ -85,14 +95,18 @@ public class ChatHandler {
     }
 
     public static void onGlobalChat(int serverId, String senderName, String content) {
+        Component message = Component.text()
+                .append(Component.text("[Global] [#" + serverId + "] ", TextColor.color(255, 85, 0)))
+                .append(Component.text(senderName, NamedTextColor.WHITE))
+                .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                .append(Component.text(content))
+                .build();
+
         Bukkit.getOnlinePlayers().forEach(player -> {
-            player.sendMessage(Component.text()
-                    .append(Component.text("[Global] [#" + serverId + "] ", TextColor.color(255, 85, 0)))
-                    .append(Component.text(senderName, NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
-                    .append(Component.text(content))
-                    .build());
+            player.sendMessage(message);
         });
+
+        Bukkit.getConsoleSender().sendMessage(message);
     }
 
     public static String handleProfanityCensoring(String plainMessage, RunePlayer sender, Player bukkitSender) {

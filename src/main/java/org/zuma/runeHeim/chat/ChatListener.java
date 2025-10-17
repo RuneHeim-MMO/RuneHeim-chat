@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.runeHeim.events.RuneGlobalChatEvent;
@@ -31,6 +32,11 @@ public class ChatListener implements Listener {
 
         ChatHandler.handleChatEvent(event, sender, senderRunePlayer, proximityManager);
 
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        PrivateChatHandler.clearPendingAcks(event.getPlayer().getUniqueId());
     }
 
 }

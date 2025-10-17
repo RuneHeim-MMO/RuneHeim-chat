@@ -1,0 +1,152 @@
+package org.zuma.runeHeim.chat;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.zuma.examplePlugin.RuneQuestPlugin;
+import org.zuma.examplePlugin.core.constants.Color;
+import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
+import org.zuma.examplePlugin.domain.player.RunePlayer;
+import org.zuma.runeHeim.RuneHeimChat;
+import org.zuma.runeHeim.events.RunePrivateChatACKEvent;
+import org.zuma.runeHeim.events.RunePrivateChatSYNEvent;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class PrivateChatHandler {
+    // Key: Sender UUID, Value: List of (ReceiverName & message uuid key)
+    public final static ConcurrentHashMap<UUID, List<Map.Entry<String, UUID>>> pendingAcks = new ConcurrentHashMap<>();
+    private final static CooldownHandler cooldownHandler = new CooldownHandler();
+
+    public static void clearPendingAcks(UUID playerUUID) {
+        pendingAcks.remove(playerUUID);
+    }
+
+    public static void sendPrivateMessage(Player sender, String receiverName, String content) {
+        RunePlayer runePlayer = RuneQuestPlugin.getPlayerManager().getRunePlayer(sender);
+
+        if (runePlayer == null) {
+            return;
+        }
+
+        if (sender.getName().equalsIgnoreCase(receiverName)) {
+            sender.sendMessage(Component.text("Why are you doing this?", Color.ERROR.asColor()));
+            return;
+        }
+
+        if (!runePlayer.asBukkitPlayer().hasPermission("runeheim.chat.cooldown")) {
+            if (cooldownHandler.isCooldownInProgress(runePlayer)) {
+                sender.sendMessage(Component.text("You are sending messages too quickly.", Color.ERROR.asColor()));
+                cooldownHandler.startCooldown(runePlayer, 2000L);
+                return;
+            }
+
+            cooldownHandler.startCooldown(runePlayer, 2000L);
+        }
+
+        String censoredMessage = ChatHandler.handleProfanityCensoring(content, runePlayer, sender);
+
+        Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
+            UUID messageUUID = UUID.randomUUID();
+
+            RunePrivateChatSYNEvent chatEvent = new RunePrivateChatSYNEvent(new RunePrivateChatSYNEvent.Payload(sender.getName(), sender.getUniqueId(), receiverName, censoredMessage, messageUUID));
+            Bukkit.getServer().getPluginManager().callEvent(chatEvent);
+
+            if (!pendingAcks.containsKey(sender.getUniqueId())) {
+                pendingAcks.put(sender.getUniqueId(), new ArrayList<>());
+            }
+
+            pendingAcks.get(sender.getUniqueId()).add(new AbstractMap.SimpleEntry<>(receiverName, messageUUID));
+
+
+            UUID originalSenderUUID = sender.getUniqueId();
+            Bukkit.getScheduler().runTaskLater(RuneQuestPlugin.getInstance(), () -> {
+                // Check pending ACKs for the original sender
+                if (pendingAcks.containsKey(originalSenderUUID)) {
+                    List<Map.Entry<String, UUID>> ackList = pendingAcks.get(originalSenderUUID);
+                    boolean removed = ackList.removeIf(entry -> entry.getKey().equals(receiverName) && entry.getValue().equals(messageUUID));
+
+                    // Only notify the original sender if the pending entry was still present (i.e. delivery failed)
+                    if (removed) {
+                        Player originalSender = Bukkit.getPlayer(originalSenderUUID);
+                        if (originalSender != null && originalSender.isOnline()) {
+                            originalSender.sendMessage(Component.text(receiverName + " is not online.", Color.ERROR.asColor()));
+                        }
+                    }
+                }
+            }, 30L);
+        });
+    }
+
+    // SYN received, deliver message to receiver
+    public static void handleSYNPrivateChatEvent(int serverId, String senderName, String senderUUID, String receiverName, String content, UUID messageUUID) {
+        Player receiverPlayer = Bukkit.getPlayerExact(receiverName);
+
+        // Receiver found, send them message
+        if (receiverPlayer != null && receiverPlayer.isOnline()) {
+
+            receiverPlayer.sendMessage(Component.text()
+                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
+                    .append(Component.text(senderName, NamedTextColor.WHITE))
+                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Component.text(content))
+                    .build());
+            // Notify console
+
+            Bukkit.getConsoleSender().sendMessage(Component.text()
+                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
+                    .append(Component.text(senderName, NamedTextColor.WHITE))
+                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Component.text(receiverName, NamedTextColor.WHITE))
+                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Component.text(content))
+                    .build());
+
+            Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
+                RunePrivateChatACKEvent chatEvent = new RunePrivateChatACKEvent(new RunePrivateChatACKEvent.Payload(senderName, UUID.fromString(senderUUID), receiverName, content, messageUUID));
+                Bukkit.getServer().getPluginManager().callEvent(chatEvent);
+            });
+
+        }
+    }
+
+    // ACK received, notify original sender
+    public static void handleACKPrivateChatEvent(int serverId, String originalMessageSender, String receiverName, String content, UUID messageUUID) {
+        Player receiverPlayer = Bukkit.getPlayerExact(originalMessageSender);
+
+        // Sender found, replay original message after it was delivered
+        if (receiverPlayer != null && receiverPlayer.isOnline()) {
+            receiverPlayer.sendMessage(Component.text()
+                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Component.text("You", NamedTextColor.WHITE))
+                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
+                    .append(Component.text(receiverName, NamedTextColor.WHITE))
+                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Component.text(content))
+                    .build());
+
+            // Notify console
+            Bukkit.getConsoleSender().sendMessage(Component.text()
+                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Component.text(originalMessageSender, NamedTextColor.WHITE))
+                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
+                    .append(Component.text(receiverName, NamedTextColor.WHITE))
+                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Component.text(content))
+                    .build());
+
+            // Remove from pending ACKs
+            if (pendingAcks.containsKey(receiverPlayer.getUniqueId())) {
+                List<Map.Entry<String, UUID>> ackList = pendingAcks.get(receiverPlayer.getUniqueId());
+                ackList.removeIf(entry -> entry.getKey().equals(receiverName) && entry.getValue().equals(messageUUID));
+            }
+        }
+    }
+}
