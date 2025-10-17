@@ -67,7 +67,7 @@ public class PrivateChatHandler {
                 // Check pending ACKs for the original sender
                 if (pendingAcks.containsKey(originalSenderUUID)) {
                     List<Map.Entry<String, UUID>> ackList = pendingAcks.get(originalSenderUUID);
-                    boolean removed = ackList.removeIf(entry -> entry.getKey().equals(receiverName) && entry.getValue().equals(messageUUID));
+                    boolean removed = ackList.removeIf(entry -> entry.getKey().equalsIgnoreCase(receiverName) && entry.getValue().equals(messageUUID));
 
                     // Only notify the original sender if the pending entry was still present (i.e. delivery failed)
                     if (removed) {
@@ -77,7 +77,7 @@ public class PrivateChatHandler {
                         }
                     }
                 }
-            }, 30L);
+            }, 20L);
         });
     }
 
@@ -108,7 +108,7 @@ public class PrivateChatHandler {
                     .build());
 
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                RunePrivateChatACKEvent chatEvent = new RunePrivateChatACKEvent(new RunePrivateChatACKEvent.Payload(senderName, UUID.fromString(senderUUID), receiverName, content, messageUUID));
+                RunePrivateChatACKEvent chatEvent = new RunePrivateChatACKEvent(new RunePrivateChatACKEvent.Payload(senderName, UUID.fromString(senderUUID), receiverPlayer.getName(), content, messageUUID));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
 
@@ -145,7 +145,7 @@ public class PrivateChatHandler {
             // Remove from pending ACKs
             if (pendingAcks.containsKey(receiverPlayer.getUniqueId())) {
                 List<Map.Entry<String, UUID>> ackList = pendingAcks.get(receiverPlayer.getUniqueId());
-                ackList.removeIf(entry -> entry.getKey().equals(receiverName) && entry.getValue().equals(messageUUID));
+                ackList.removeIf(entry -> entry.getKey().equalsIgnoreCase(receiverName) && entry.getValue().equals(messageUUID));
             }
         }
     }
