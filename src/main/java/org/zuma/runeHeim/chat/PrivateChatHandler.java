@@ -44,11 +44,6 @@ public class PrivateChatHandler {
             return;
         }
 
-        if (sender.getName().equalsIgnoreCase(receiverName)) {
-            sender.sendMessage(Component.text("Why are you doing this?", Color.ERROR.asColor()));
-            return;
-        }
-
         if (!runePlayer.asBukkitPlayer().hasPermission("runeheim.chat.cooldown")) {
             if (cooldownHandler.isCooldownInProgress(runePlayer)) {
                 sender.sendMessage(Component.text("You are sending messages too quickly.", Color.ERROR.asColor()));
@@ -60,8 +55,6 @@ public class PrivateChatHandler {
         }
 
         String censoredMessage = ChatHandler.handleProfanityCensoring(content, runePlayer, sender);
-
-
         Player localReceiverPlayer = Bukkit.getPlayerExact(receiverName);
 
         // Local receiver found, send them message directly without broadcasting events

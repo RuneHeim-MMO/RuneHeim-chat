@@ -53,7 +53,7 @@ public class ChatHandler {
         switch (senderBroadcastMode) {
             case NETWORK -> {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), sender.getUniqueId(), plainMessage));
+                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), sender.getUniqueId(), censoredMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
                 event.setCancelled(true);
