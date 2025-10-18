@@ -16,9 +16,12 @@ import org.zuma.examplePlugin.core.utils.MathUtils;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.hud.HudService;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
-import org.zuma.runeHeim.ProximityMode;
+import org.zuma.runeHeim.chat.proximity.BroadcastMode;
 import org.zuma.runeHeim.RuneHeimChat;
-import org.zuma.runeHeim.events.RuneGlobalChatEvent;
+import org.zuma.runeHeim.chat.proximity.ProximityManager;
+import org.zuma.runeHeim.chat.proximity.SpyMode;
+import org.zuma.runeHeim.events.RuneChatSpyEvent;
+import org.zuma.runeHeim.events.RuneGlobalChatBroadcastEvent;
 import org.zuma.runeHeim.util.HudUtils;
 import org.zuma.runeHeim.util.TextUtils;
 
@@ -40,15 +43,17 @@ public class ChatHandler {
             cooldownHandler.startCooldown(senderRunePlayer, 2000L);
         }
 
+        BroadcastMode senderBroadcastMode = proximityManager.getBroadcastMode(sender.getUniqueId());
+        boolean isServerMessage = senderBroadcastMode == BroadcastMode.SERVER;
+
         Map<UUID, Double> otherPlayerDistances = calculateViewerDistances(event, sender);
         String plainMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
-        ProximityMode senderProximityMode = proximityManager.getMode(sender.getUniqueId());
-        boolean isServerMessage = senderProximityMode == ProximityMode.SERVER;
+        String censoredMessage = handleProfanityCensoring(plainMessage, senderRunePlayer, sender);
 
-        switch (senderProximityMode) {
+        switch (senderBroadcastMode) {
             case NETWORK -> {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                    RuneGlobalChatEvent chatEvent = new RuneGlobalChatEvent(new RuneGlobalChatEvent.Payload(sender.getName(), sender.getUniqueId(), plainMessage));
+                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), sender.getUniqueId(), plainMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
                 event.setCancelled(true);
@@ -58,21 +63,37 @@ public class ChatHandler {
                 event.viewers().addAll(Bukkit.getOnlinePlayers());
             }
             case LOCAL -> {
+                // Remove viewers that are too far away from an event
                 removeTooFarAwayViewers(event, otherPlayerDistances);
+
+                Bukkit.getOnlinePlayers().forEach(player -> {
+                    SpyMode mode = proximityManager.getSpyMode(player.getUniqueId());
+
+                    if (mode == SpyMode.SERVER && !event.viewers().contains(player)) {
+                        int distance = (int) MathUtils.getLocationsDistanceXZ(sender.getLocation(), player.getLocation());
+                        player.sendMessage(Component.text("§9[SPY §d(" + distance + " blocks)§9] ").append(Renderer.renderPlayerMessage(senderRunePlayer, sender, sender.displayName(), Component.text(censoredMessage, NamedTextColor.WHITE), player, senderBroadcastMode)));
+                    }
+                });
             }
         }
 
-        int visiblePlayers = getPlayerViewersCount(event, otherPlayerDistances, sender, senderProximityMode);
 
-        if (visiblePlayers == 0) {
+        int receiversCount = getPlayerViewersCount(event, otherPlayerDistances, sender, senderBroadcastMode);
+
+        if (isServerMessage || senderBroadcastMode == BroadcastMode.LOCAL) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                if (senderProximityMode == ProximityMode.LOCAL) {
+                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), sender.getUniqueId(), censoredMessage, receiversCount));
+                Bukkit.getServer().getPluginManager().callEvent(chatEvent);
+            });
+        }
+
+        if (receiversCount == 0) {
+            Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
+                if (senderBroadcastMode == BroadcastMode.LOCAL) {
                     HudService.sendInfoMessage(senderRunePlayer, Component.text("You are too far away from other players. Nobody can hear you."));
                 }
             });
         }
-
-        String censoredMessage = handleProfanityCensoring(plainMessage, senderRunePlayer, sender);
 
         event.renderer((source, originalName, message, viewer) -> {
             Double distance = 0.0;
@@ -87,27 +108,13 @@ public class ChatHandler {
 
             // Console logging
             if (viewer instanceof ConsoleCommandSender) {
-                finalMessage = finalMessage.append(Component.text(" (" + visiblePlayers + " player viewers)"));
+                finalMessage = finalMessage.append(Component.text(" (" + receiversCount + " player viewers)"));
             }
 
-            return Renderer.renderPlayerMessage(senderRunePlayer, source, originalName, finalMessage, viewer, senderProximityMode);
+            return Renderer.renderPlayerMessage(senderRunePlayer, source, originalName, finalMessage, viewer, senderBroadcastMode);
         });
     }
 
-    public static void onGlobalChat(int serverId, String senderName, String content) {
-        Component message = Component.text()
-                .append(Component.text("[Global] [#" + serverId + "] ", TextColor.color(255, 85, 0)))
-                .append(Component.text(senderName, NamedTextColor.WHITE))
-                .append(Component.text(" » ", TextColor.color(150, 150, 150)))
-                .append(Component.text(content))
-                .build();
-
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            player.sendMessage(message);
-        });
-
-        Bukkit.getConsoleSender().sendMessage(message);
-    }
 
     public static String handleProfanityCensoring(String plainMessage, RunePlayer sender, Player bukkitSender) {
         if (bukkitSender.hasPermission("runeheim.chat.profanity")) {
@@ -144,7 +151,7 @@ public class ChatHandler {
         });
     }
 
-    public static int getPlayerViewersCount(AsyncChatEvent event, Map<UUID, Double> distances, Player sender, ProximityMode senderMode) {
+    public static int getPlayerViewersCount(AsyncChatEvent event, Map<UUID, Double> distances, Player sender, BroadcastMode senderMode) {
         int visiblePlayers = 0;
         Iterator<Audience> it = event.viewers().iterator();
         while (it.hasNext()) {
@@ -154,7 +161,7 @@ public class ChatHandler {
                 if (playerViewer.getUniqueId().equals(sender.getUniqueId())) continue;
 
                 // For server-mode messages, don't remove viewers by distance — count everyone
-                if (senderMode == ProximityMode.SERVER) {
+                if (senderMode == BroadcastMode.SERVER) {
                     visiblePlayers++;
                     continue;
                 }

@@ -4,22 +4,23 @@ import org.zuma.examplePlugin.core.redis.RedisEvent;
 
 import java.util.UUID;
 
-public class RuneGlobalChatEvent extends RedisEvent<RuneGlobalChatEvent.Payload> {
+public class RuneChatSpyEvent extends RedisEvent<RuneChatSpyEvent.Payload> {
     private final Payload payload;
 
-    public RuneGlobalChatEvent(Payload payload) {
+    public RuneChatSpyEvent(Payload payload) {
         this.payload = payload;
     }
 
     public static class Payload extends RedisPayload {
-        public String senderName;
+        public String senderName, content;
         public UUID senderUUID;
-        public String content;
+        public int viewers;
 
-        public Payload(String senderName, UUID senderUUID, String content) {
+        public Payload(String senderName, UUID senderUUID, String content, int viewers) {
             this.senderName = senderName;
             this.senderUUID = senderUUID;
             this.content = content;
+            this.viewers = viewers;
         }
     }
 

@@ -4,13 +4,13 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.zuma.examplePlugin.core.logger.constants.LogLevel;
 import org.zuma.examplePlugin.core.redis.GlobalEventHandler;
-import org.zuma.examplePlugin.domain.command.SkillsCommand;
 import org.zuma.runeHeim.chat.ChatListener;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.runeHeim.chat.ProfanityFilter;
-import org.zuma.runeHeim.chat.ProximityManager;
+import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.commands.ChatCommand;
 import org.zuma.runeHeim.commands.MsgCommand;
+import org.zuma.runeHeim.commands.ReplyCommand;
 import org.zuma.runeHeim.redis.RedisHandler;
 
 public final class RuneHeimChat extends JavaPlugin {
@@ -35,6 +35,10 @@ public final class RuneHeimChat extends JavaPlugin {
 
         pluginInstance.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
                 event -> event.registrar().register("msg", new MsgCommand()));
+
+        pluginInstance.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
+                event -> event.registrar().register("r", new ReplyCommand()));
+
 
         RuneQuestPlugin.getRuneLogger().log(LogLevel.INFO, "Chat initialized.");
     }

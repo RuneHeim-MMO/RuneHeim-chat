@@ -6,11 +6,9 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.core.constants.Color;
-import org.zuma.runeHeim.ProximityMode;
 import org.zuma.runeHeim.RuneHeimChat;
-import org.zuma.runeHeim.chat.ChatHandler;
 import org.zuma.runeHeim.chat.PrivateChatHandler;
-import org.zuma.runeHeim.chat.ProximityManager;
+import org.zuma.runeHeim.chat.proximity.ProximityManager;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,8 +38,7 @@ public class MsgCommand implements BasicCommand {
 
         }
 
-
-        player.sendMessage(Component.text("Usage: /msg <player name> <msg>", Color.ERROR.asColor()));
+        player.sendMessage(Component.text("Usage: /msg <player name> <msg> - send private message across server/network.", Color.ERROR.asColor()));
 
     }
 

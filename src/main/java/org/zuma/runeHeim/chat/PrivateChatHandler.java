@@ -10,9 +10,11 @@ import org.zuma.examplePlugin.core.constants.Color;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.runeHeim.RuneHeimChat;
+import org.zuma.runeHeim.chat.constants.Template;
 import org.zuma.runeHeim.events.RunePrivateChatACKEvent;
 import org.zuma.runeHeim.events.RunePrivateChatSYNEvent;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,9 +22,19 @@ public class PrivateChatHandler {
     // Key: Sender UUID, Value: List of (ReceiverName & message uuid key)
     public final static ConcurrentHashMap<UUID, List<Map.Entry<String, UUID>>> pendingAcks = new ConcurrentHashMap<>();
     private final static CooldownHandler cooldownHandler = new CooldownHandler();
+    private final static HashMap<UUID, String> recentMessages = new HashMap<>(); // Player name : last private message sender name
 
     public static void clearPendingAcks(UUID playerUUID) {
         pendingAcks.remove(playerUUID);
+    }
+
+    public static void setRecentMessageSender(UUID playerUUID, String senderName) {
+        recentMessages.put(playerUUID, senderName);
+    }
+
+    @Nullable
+    public static String getRecentMessageSender(UUID playerUUID) {
+        return recentMessages.get(playerUUID);
     }
 
     public static void sendPrivateMessage(Player sender, String receiverName, String content) {
@@ -48,6 +60,42 @@ public class PrivateChatHandler {
         }
 
         String censoredMessage = ChatHandler.handleProfanityCensoring(content, runePlayer, sender);
+
+
+        Player localReceiverPlayer = Bukkit.getPlayerExact(receiverName);
+
+        // Local receiver found, send them message directly without broadcasting events
+        if (localReceiverPlayer != null && localReceiverPlayer.isOnline()) {
+            localReceiverPlayer.sendMessage(Component.text()
+                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Component.text(sender.getName(), NamedTextColor.WHITE))
+                    .append(Template.SEPARATOR.component())
+                    .append(Component.text(content))
+                    .build());
+
+            sender.sendMessage(Component.text()
+                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Component.text("You", NamedTextColor.WHITE))
+                    .append(Template.SEPARATOR.component())
+                    .append(Component.text(localReceiverPlayer.getName(), NamedTextColor.WHITE))
+                    .append(Template.SEPARATOR.component())
+                    .append(Component.text(content))
+                    .build());
+
+            setRecentMessageSender(localReceiverPlayer.getUniqueId(), sender.getName());
+
+            // Notify console
+            Bukkit.getConsoleSender().sendMessage(Component.text()
+                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Component.text(sender.getName(), NamedTextColor.WHITE))
+                    .append(Template.SEPARATOR.component())
+                    .append(Component.text(localReceiverPlayer.getName(), NamedTextColor.WHITE))
+                    .append(Template.SEPARATOR.component())
+                    .append(Component.text(content))
+                    .build());
+
+            return;
+        }
 
         Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
             UUID messageUUID = UUID.randomUUID();
@@ -82,33 +130,34 @@ public class PrivateChatHandler {
     }
 
     // SYN received, deliver message to receiver
-    public static void handleSYNPrivateChatEvent(int serverId, String senderName, String senderUUID, String receiverName, String content, UUID messageUUID) {
+    public static void onSYNPrivateChatEventReceived(int serverId, String senderName, String senderUUID, String receiverName, String content, UUID messageUUID) {
         Player receiverPlayer = Bukkit.getPlayerExact(receiverName);
 
         // Receiver found, send them message
         if (receiverPlayer != null && receiverPlayer.isOnline()) {
-
             receiverPlayer.sendMessage(Component.text()
-                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Template.PRIVATE_MESSAGE.component())
                     .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
                     .append(Component.text(senderName, NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Template.SEPARATOR.component())
                     .append(Component.text(content))
                     .build());
-            // Notify console
+            setRecentMessageSender(receiverPlayer.getUniqueId(), senderName);
 
+
+            // Notify console
             Bukkit.getConsoleSender().sendMessage(Component.text()
-                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Template.PRIVATE_MESSAGE.component())
                     .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
                     .append(Component.text(senderName, NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Template.SEPARATOR.component())
                     .append(Component.text(receiverName, NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Template.SEPARATOR.component())
                     .append(Component.text(content))
                     .build());
 
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                RunePrivateChatACKEvent chatEvent = new RunePrivateChatACKEvent(new RunePrivateChatACKEvent.Payload(senderName, UUID.fromString(senderUUID), receiverPlayer.getName(), content, messageUUID));
+                RunePrivateChatACKEvent chatEvent = new RunePrivateChatACKEvent(new RunePrivateChatACKEvent.Payload(senderName, UUID.fromString(senderUUID), receiverPlayer.getName(), content, messageUUID, serverId));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
 
@@ -116,29 +165,29 @@ public class PrivateChatHandler {
     }
 
     // ACK received, notify original sender
-    public static void handleACKPrivateChatEvent(int serverId, String originalMessageSender, String receiverName, String content, UUID messageUUID) {
+    public static void onACKPrivateChatEventReceived(int serverId, String originalMessageSender, String receiverName, String content, UUID messageUUID) {
         Player receiverPlayer = Bukkit.getPlayerExact(originalMessageSender);
 
         // Sender found, replay original message after it was delivered
         if (receiverPlayer != null && receiverPlayer.isOnline()) {
             receiverPlayer.sendMessage(Component.text()
-                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Template.PRIVATE_MESSAGE.component())
                     .append(Component.text("You", NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Template.SEPARATOR.component())
                     .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
                     .append(Component.text(receiverName, NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Template.SEPARATOR.component())
                     .append(Component.text(content))
                     .build());
 
             // Notify console
             Bukkit.getConsoleSender().sendMessage(Component.text()
-                    .append(Component.text("[PM] ", TextColor.color(77, 128, 240)))
+                    .append(Template.PRIVATE_MESSAGE.component())
                     .append(Component.text(originalMessageSender, NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Template.SEPARATOR.component())
                     .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
                     .append(Component.text(receiverName, NamedTextColor.WHITE))
-                    .append(Component.text(" » ", TextColor.color(150, 150, 150)))
+                    .append(Template.SEPARATOR.component())
                     .append(Component.text(content))
                     .build());
 
