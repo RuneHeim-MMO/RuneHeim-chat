@@ -23,7 +23,7 @@ public class ChatListener implements Listener {
         this.proximityManager = proximityManager;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onAsyncChat(AsyncChatEvent event) {
         Player sender = event.getPlayer();
         RunePlayer senderRunePlayer = RuneQuestPlugin.getPlayerManager().getRunePlayer(sender);
