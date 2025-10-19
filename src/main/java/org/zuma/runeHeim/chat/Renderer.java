@@ -22,7 +22,7 @@ public class Renderer {
         return Component.text()
                 .append(mode == BroadcastMode.SERVER ? Template.SERVER_MESSAGE.component() : Component.empty())
                 .append(Component.text("[Lv.", levelComponent.color()).append(levelComponent).append(Component.text("] ")))
-                .append(Component.text("•  ").append(senderRunePlayer.getRole().getPrefix()).append(displayName.color(NamedTextColor.WHITE)))
+                .append(Component.text("• ").append(senderRunePlayer.getRole().getPrefix()).append(displayName.color(NamedTextColor.WHITE)))
                 .append(Template.SEPARATOR.component())
                 .append(message)
                 .build();
