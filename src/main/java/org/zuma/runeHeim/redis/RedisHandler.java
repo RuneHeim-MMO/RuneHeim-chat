@@ -18,19 +18,19 @@ public class RedisHandler {
         GlobalEventHandler.registerEvent(RunePrivateChatSYNEvent.class, RunePrivateChatSYNEvent.Payload.class);
 
         GlobalEventHandler.addListener(RuneChatSpyEvent.class, payload -> {
-            ChatListener.onSpyEventReceived(payload.serverId, payload.senderName, payload.content, payload.viewers);
+            ChatListener.onSpyEventReceived(payload.serverId, payload.senderName, payload.senderRank, payload.content, payload.viewers);
         });
 
         GlobalEventHandler.addListener(RuneGlobalChatBroadcastEvent.class, payload -> {
-            ChatListener.onGlobalChatEventReceived(payload.serverId, payload.senderName, payload.content);
+            ChatListener.onGlobalChatEventReceived(payload.serverId, payload.senderName, payload.senderRank, payload.content);
         });
 
         GlobalEventHandler.addListener(RunePrivateChatSYNEvent.class, payload -> {
-            PrivateChatHandler.onSYNPrivateChatEventReceived(payload.serverId, payload.senderName, payload.senderUUID.toString(), payload.receiverName, payload.content, payload.messageUUID);
+            PrivateChatHandler.onSYNPrivateChatEventReceived(payload.serverId, payload.senderName, payload.senderRank, payload.senderUUID.toString(), payload.receiverName, payload.content, payload.messageUUID);
         });
 
         GlobalEventHandler.addListener(RunePrivateChatACKEvent.class, payload -> {
-            PrivateChatHandler.onACKPrivateChatEventReceived(payload.serverId, payload.senderName, payload.receiverName, payload.content, payload.messageUUID);
+            PrivateChatHandler.onACKPrivateChatEventReceived(payload.serverId, payload.senderName, payload.senderRank, payload.receiverName, payload.receiverRank, payload.content, payload.messageUUID);
         });
     }
 }

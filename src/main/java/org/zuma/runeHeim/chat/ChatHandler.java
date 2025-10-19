@@ -36,6 +36,7 @@ public class ChatHandler {
         if (!senderRunePlayer.asBukkitPlayer().hasPermission("runeheim.chat.cooldown")) {
             if (cooldownHandler.isCooldownInProgress(senderRunePlayer)) {
                 sender.sendMessage(Component.text("You are sending messages too quickly.", Color.ERROR.asColor()));
+                event.setCancelled(true);
                 cooldownHandler.startCooldown(senderRunePlayer, 2000L);
                 return;
             }
@@ -53,7 +54,7 @@ public class ChatHandler {
         switch (senderBroadcastMode) {
             case NETWORK -> {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), sender.getUniqueId(), censoredMessage));
+                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), senderRunePlayer.getRole(), sender.getUniqueId(), censoredMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
                 event.setCancelled(true);
@@ -82,7 +83,7 @@ public class ChatHandler {
 
         if (isServerMessage || senderBroadcastMode == BroadcastMode.LOCAL) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), sender.getUniqueId(), censoredMessage, receiversCount));
+                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), senderRunePlayer.getRole(), sender.getUniqueId(), censoredMessage, receiversCount));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
         }
