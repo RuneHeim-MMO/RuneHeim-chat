@@ -14,6 +14,7 @@ import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.chat.constants.Template;
 import org.zuma.runeHeim.events.RunePrivateChatACKEvent;
 import org.zuma.runeHeim.events.RunePrivateChatSYNEvent;
+import org.zuma.runeHeim.util.PlayerUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -56,7 +57,7 @@ public class PrivateChatHandler {
         }
 
         String censoredMessage = ChatHandler.handleProfanityCensoring(content, runePlayer, sender);
-        Player localReceiverPlayer = Bukkit.getPlayerExact(receiverName);
+        Player localReceiverPlayer = PlayerUtils.getPlayerStartingWith(receiverName);
 
         // Local receiver found, send them message directly without broadcasting events
         if (localReceiverPlayer != null && localReceiverPlayer.isOnline()) {
@@ -114,7 +115,7 @@ public class PrivateChatHandler {
                 // Check pending ACKs for the original sender
                 if (pendingAcks.containsKey(originalSenderUUID)) {
                     List<Map.Entry<String, UUID>> ackList = pendingAcks.get(originalSenderUUID);
-                    boolean removed = ackList.removeIf(entry -> entry.getKey().equalsIgnoreCase(receiverName) && entry.getValue().equals(messageUUID));
+                    boolean removed = ackList.removeIf(entry -> entry.getValue().equals(messageUUID));
 
                     // Only notify the original sender if the pending entry was still present (i.e. delivery failed)
                     if (removed) {
@@ -130,7 +131,7 @@ public class PrivateChatHandler {
 
     // SYN received, deliver message to receiver
     public static void onSYNPrivateChatEventReceived(int serverId, String senderName, PlayerRole senderRole, String senderUUID, String receiverName, String content, UUID messageUUID) {
-        Player receiverPlayer = Bukkit.getPlayerExact(receiverName);
+        Player receiverPlayer = PlayerUtils.getPlayerStartingWith(receiverName);
 
         // Receiver found, send them message
         if (receiverPlayer != null && receiverPlayer.isOnline()) {
@@ -198,7 +199,7 @@ public class PrivateChatHandler {
             // Remove from pending ACKs
             if (pendingAcks.containsKey(receiverPlayer.getUniqueId())) {
                 List<Map.Entry<String, UUID>> ackList = pendingAcks.get(receiverPlayer.getUniqueId());
-                ackList.removeIf(entry -> entry.getKey().equalsIgnoreCase(receiverName) && entry.getValue().equals(messageUUID));
+                ackList.removeIf(entry -> entry.getValue().equals(messageUUID));
             }
         }
     }
