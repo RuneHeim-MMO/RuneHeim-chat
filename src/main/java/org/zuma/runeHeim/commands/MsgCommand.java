@@ -3,6 +3,7 @@ package org.zuma.runeHeim.commands;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.core.constants.Color;
@@ -44,7 +45,18 @@ public class MsgCommand implements BasicCommand {
 
     @Override
     public Collection<String> suggest(CommandSourceStack source, String[] args) {
-        return List.of();
+        if (args.length != 1) {
+            return List.of();
+        }
+
+        String prefix = args[0].toLowerCase();
+        String senderName = source.getSender().getName();
+
+        return Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .filter(name -> !senderName.equalsIgnoreCase(name))   // exclude sender
+                .filter(name -> name.toLowerCase().startsWith(prefix)) // match typed prefix
+                .toList();
     }
 
 }
