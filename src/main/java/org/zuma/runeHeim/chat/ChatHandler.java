@@ -37,11 +37,11 @@ public class ChatHandler {
             if (cooldownHandler.isCooldownInProgress(senderRunePlayer)) {
                 sender.sendMessage(Component.text("You are sending messages too quickly.", Color.ERROR.asColor()));
                 event.setCancelled(true);
-                cooldownHandler.startCooldown(senderRunePlayer, 2000L);
+                cooldownHandler.startCooldown(senderRunePlayer, 1500L);
                 return;
             }
 
-            cooldownHandler.startCooldown(senderRunePlayer, 2000L);
+            cooldownHandler.startCooldown(senderRunePlayer, 1500L);
         }
 
         BroadcastMode senderBroadcastMode = proximityManager.getBroadcastMode(sender.getUniqueId());

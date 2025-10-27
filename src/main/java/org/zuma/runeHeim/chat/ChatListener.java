@@ -12,10 +12,14 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.permissions.PlayerRole;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
+import org.zuma.examplePlugin.events.party.PartyMessageEvent;
 import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.chat.constants.Template;
+import org.zuma.runeHeim.chat.proximity.BroadcastMode;
 import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.chat.proximity.SpyMode;
+
+import static org.zuma.runeHeim.chat.ChatHandler.handleProfanityCensoring;
 
 public class ChatListener implements Listener {
     private final ProximityManager proximityManager;
@@ -78,4 +82,32 @@ public class ChatListener implements Listener {
         });
     }
 
+    @EventHandler
+    public void onPartyMessage(PartyMessageEvent event) {
+        String censoredMessage = handleProfanityCensoring(event.getContent(), event.getSender(), event.getSender().asBukkitPlayer());
+
+        event.getReceivers().forEach(receiver -> {
+            Component renderedMessage = Renderer.renderPlayerMessage(
+                    event.getSender(),
+                    event.getSender().asBukkitPlayer(),
+                    event.getSender().asBukkitPlayer().displayName(),
+                    Component.text(censoredMessage),
+                    receiver.asBukkitPlayer(),
+                    BroadcastMode.PARTY
+            );
+
+            receiver.asBukkitPlayer().sendMessage(renderedMessage);
+        });
+
+        Component renderedMessage = Renderer.renderPlayerMessage(
+                event.getSender(),
+                event.getSender().asBukkitPlayer(),
+                event.getSender().asBukkitPlayer().displayName(),
+                Component.text(censoredMessage),
+                Bukkit.getConsoleSender(),
+                BroadcastMode.PARTY
+        );
+
+        Bukkit.getConsoleSender().sendMessage(renderedMessage);
+    }
 }
