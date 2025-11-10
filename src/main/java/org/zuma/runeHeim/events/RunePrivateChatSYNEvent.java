@@ -13,17 +13,17 @@ public class RunePrivateChatSYNEvent extends RedisEvent<RunePrivateChatSYNEvent.
     }
 
     public static class Payload extends RedisPayload {
-        public String senderName, receiverName, content;
+        public String senderName, senderPrefix, senderSupporterPrefix, receiverName, content;
         public UUID senderUUID, messageUUID;
-        public String senderPrefix;
 
-        public Payload(String senderName, String senderPrefix, UUID senderUUID, String receiverName, String content, UUID messsageUUID) {
+        public Payload(String senderName, String senderPrefix, String senderSupporterPrefix, UUID senderUUID, String receiverName, String content, UUID messsageUUID) {
             this.senderName = senderName;
             this.senderPrefix = senderPrefix;
             this.senderUUID = senderUUID;
             this.receiverName = receiverName;
             this.content = content;
             this.messageUUID = messsageUUID;
+            this.senderSupporterPrefix = senderSupporterPrefix;
         }
     }
 

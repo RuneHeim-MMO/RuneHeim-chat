@@ -13,13 +13,14 @@ public class RuneChatSpyEvent extends RedisEvent<RuneChatSpyEvent.Payload> {
     }
 
     public static class Payload extends RedisPayload {
-        public String senderName, content, senderPrefix;
+        public String senderName, content, senderPrefix, senderSupporterPrefix;
         public UUID senderUUID;
         public int viewers;
 
-        public Payload(String senderName, String senderPrefix, UUID senderUUID, String content, int viewers) {
+        public Payload(String senderName, String senderPrefix, String senderSupporterPrefix, UUID senderUUID, String content, int viewers) {
             this.senderName = senderName;
             this.senderPrefix = senderPrefix;
+            this.senderSupporterPrefix = senderSupporterPrefix;
             this.senderUUID = senderUUID;
             this.content = content;
             this.viewers = viewers;

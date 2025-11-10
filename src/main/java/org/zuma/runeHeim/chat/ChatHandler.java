@@ -56,7 +56,7 @@ public class ChatHandler {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
                     String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
 
-                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), senderPrefix, sender.getUniqueId(), censoredMessage));
+                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), senderPrefix, senderRunePlayer.getRole().getSupporterRoleIcon() , sender.getUniqueId(), censoredMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
                 event.setCancelled(true);
@@ -87,7 +87,7 @@ public class ChatHandler {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
                 String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
 
-                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), senderPrefix, sender.getUniqueId(), censoredMessage, receiversCount));
+                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), senderPrefix, senderRunePlayer.getRole().getSupporterRoleIcon(), sender.getUniqueId(), censoredMessage, receiversCount));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
         }

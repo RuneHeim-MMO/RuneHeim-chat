@@ -22,15 +22,15 @@ public class RedisHandler {
         });
 
         GlobalEventHandler.addListener(RuneGlobalChatBroadcastEvent.class, payload -> {
-            ChatListener.onGlobalChatEventReceived(payload.serverId, payload.senderName, payload.senderPrefix, payload.content);
+            ChatListener.onGlobalChatEventReceived(payload.serverId, payload.senderName, payload.senderPrefix, payload.senderSupporterPrefix, payload.content);
         });
 
         GlobalEventHandler.addListener(RunePrivateChatSYNEvent.class, payload -> {
-            PrivateChatHandler.onSYNPrivateChatEventReceived(payload.serverId, payload.senderName, payload.senderPrefix, payload.senderUUID.toString(), payload.receiverName, payload.content, payload.messageUUID);
+            PrivateChatHandler.onSYNPrivateChatEventReceived(payload.serverId, payload.senderName, payload.senderPrefix, payload.senderSupporterPrefix, payload.senderUUID.toString(), payload.receiverName, payload.content, payload.messageUUID);
         });
 
         GlobalEventHandler.addListener(RunePrivateChatACKEvent.class, payload -> {
-            PrivateChatHandler.onACKPrivateChatEventReceived(payload.serverId, payload.senderName, payload.senderPrefix, payload.receiverName, payload.receiverPrefix, payload.content, payload.messageUUID);
+            PrivateChatHandler.onACKPrivateChatEventReceived(payload.serverId, payload.senderName, payload.senderPrefix, payload.receiverName, payload.receiverPrefix, payload.receiverSupporterPrefix, payload.content, payload.messageUUID);
         });
     }
 }

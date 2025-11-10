@@ -45,6 +45,7 @@ public class Renderer {
 
         return Component.text()
                 .append(prefix)
+                .append(Component.text(senderRunePlayer.getRole().getSupporterRoleIcon()))
                 .append(Component.text("[Lv.", levelComponent.color()).append(levelComponent).append(Component.text("] ")))
                 .append(Component.text("• ")
                         .append(partyComponent)

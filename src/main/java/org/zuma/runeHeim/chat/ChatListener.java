@@ -47,10 +47,11 @@ public class ChatListener implements Listener {
         PrivateChatHandler.clearPendingAcks(event.getPlayer().getUniqueId());
     }
 
-    public static void onGlobalChatEventReceived(int serverId, String senderName, String senderPrefix, String content) {
+    public static void onGlobalChatEventReceived(int serverId, String senderName, String senderPrefix, String senderSupporterPrefix, String content) {
         Component message = Component.text()
                 .append(Template.GLOBAL_MESSAGE.component())
                 .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
+                .append(Component.text(senderSupporterPrefix))
                 .append(Component.text(senderPrefix))
                 .append(Component.text(senderName, NamedTextColor.WHITE))
                 .append(Template.SEPARATOR.component())
