@@ -47,11 +47,11 @@ public class ChatListener implements Listener {
         PrivateChatHandler.clearPendingAcks(event.getPlayer().getUniqueId());
     }
 
-    public static void onGlobalChatEventReceived(int serverId, String senderName, PlayerRole senderRank, String content) {
+    public static void onGlobalChatEventReceived(int serverId, String senderName, String senderPrefix, String content) {
         Component message = Component.text()
                 .append(Template.GLOBAL_MESSAGE.component())
                 .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
-                .append(senderRank.getPrefix())
+                .append(Component.text(senderPrefix))
                 .append(Component.text(senderName, NamedTextColor.WHITE))
                 .append(Template.SEPARATOR.component())
                 .append(Component.text(content))
@@ -64,7 +64,7 @@ public class ChatListener implements Listener {
         Bukkit.getConsoleSender().sendMessage(message);
     }
 
-    public static void onSpyEventReceived(int serverId, String senderName, PlayerRole senderRank, String content, int viewersCount) {
+    public static void onSpyEventReceived(int serverId, String senderName, String senderPrefix, String content, int viewersCount) {
         Bukkit.getOnlinePlayers().forEach(player -> {
             if (senderName.equalsIgnoreCase(player.getName())) return;
 
@@ -73,7 +73,7 @@ public class ChatListener implements Listener {
             if (mode == SpyMode.NETWORK) {
                 player.sendMessage(Component.text()
                         .append(Component.text("§9[SPY §d(#" + serverId + ", " + viewersCount + " viewers)§9] "))
-                        .append(senderRank.getPrefix())
+                        .append(Component.text(senderPrefix))
                         .append(Component.text(senderName, NamedTextColor.WHITE))
                         .append(Template.SEPARATOR.component())
                         .append(Component.text(content))

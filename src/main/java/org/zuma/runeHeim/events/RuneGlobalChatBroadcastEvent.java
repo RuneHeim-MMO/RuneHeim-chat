@@ -14,13 +14,13 @@ public class RuneGlobalChatBroadcastEvent extends RedisEvent<RuneGlobalChatBroad
 
     public static class Payload extends RedisPayload {
         public String senderName;
-        public PlayerRole senderRank;
+        public String senderPrefix;
         public UUID senderUUID;
         public String content;
 
-        public Payload(String senderName, PlayerRole senderRank, UUID senderUUID, String content) {
+        public Payload(String senderName, String senderPrefix, UUID senderUUID, String content) {
             this.senderName = senderName;
-            this.senderRank = senderRank;
+            this.senderPrefix = senderPrefix;
             this.senderUUID = senderUUID;
             this.content = content;
         }

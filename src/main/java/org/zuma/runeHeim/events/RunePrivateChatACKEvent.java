@@ -16,14 +16,14 @@ public class RunePrivateChatACKEvent extends RedisEvent<RunePrivateChatACKEvent.
     public static class Payload extends RedisPayload {
         public String senderName, receiverName, content;
         public UUID senderUUID, messageUUID;
-        public PlayerRole senderRank, receiverRank;
+        public String senderPrefix, receiverPrefix;
 
-        public Payload(String senderName,PlayerRole senderRank, UUID senderUUID, String receiverName, PlayerRole receiverRank, String content, UUID messsageUUID, int targetServerId) {
+        public Payload(String senderName, String senderPrefix, UUID senderUUID, String receiverName, String receiverPrefix, String content, UUID messsageUUID, int targetServerId) {
             this.senderName = senderName;
             this.senderUUID = senderUUID;
-            this.senderRank = senderRank;
+            this.senderPrefix = senderPrefix;
             this.receiverName = receiverName;
-            this.receiverRank = receiverRank;
+            this.receiverPrefix = receiverPrefix;
             this.content = content;
             this.messageUUID = messsageUUID;
             this.targetServers = List.of(targetServerId);

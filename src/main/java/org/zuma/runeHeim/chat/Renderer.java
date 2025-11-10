@@ -4,7 +4,6 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Color;
 import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.constants.Icon;
@@ -12,7 +11,7 @@ import org.zuma.examplePlugin.domain.party.Party;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.runeHeim.chat.constants.Template;
 import org.zuma.runeHeim.chat.proximity.BroadcastMode;
-import org.zuma.runeHeim.util.TextUtils;
+import org.zuma.runeHeim.util.ChatTextUtils;
 
 public class Renderer {
     public static Component renderPlayerMessage(RunePlayer senderRunePlayer, Player source, Component sourceDisplayName, Component message, Audience viewer, BroadcastMode mode) {
@@ -22,7 +21,7 @@ public class Renderer {
 
         String namePlain = PlainTextComponentSerializer.plainText().serialize(sourceDisplayName);
         Component displayName = Component.text(namePlain);
-        Component levelComponent = TextUtils.getLevelGradientComponent(senderCmbLvl);
+        Component levelComponent = ChatTextUtils.getLevelGradientComponent(senderCmbLvl);
         Component partyComponent = Component.empty();
         Component playerPrefix = !isPartyChat ? senderRunePlayer.getRole().getPrefix() : Component.empty();
         NamedTextColor usernameColor = isPartyChat ? NamedTextColor.YELLOW : NamedTextColor.WHITE;

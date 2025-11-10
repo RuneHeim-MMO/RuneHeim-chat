@@ -4,7 +4,6 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -13,6 +12,7 @@ import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.constants.Color;
 import org.zuma.examplePlugin.core.logger.constants.LogLevel;
 import org.zuma.examplePlugin.core.utils.MathUtils;
+import org.zuma.examplePlugin.core.utils.TextUtils;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.hud.HudService;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
@@ -23,7 +23,7 @@ import org.zuma.runeHeim.chat.proximity.SpyMode;
 import org.zuma.runeHeim.events.RuneChatSpyEvent;
 import org.zuma.runeHeim.events.RuneGlobalChatBroadcastEvent;
 import org.zuma.runeHeim.util.HudUtils;
-import org.zuma.runeHeim.util.TextUtils;
+import org.zuma.runeHeim.util.ChatTextUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,7 +54,9 @@ public class ChatHandler {
         switch (senderBroadcastMode) {
             case NETWORK -> {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), senderRunePlayer.getRole(), sender.getUniqueId(), censoredMessage));
+                    String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
+
+                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), senderPrefix, sender.getUniqueId(), censoredMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
                 event.setCancelled(true);
@@ -83,7 +85,9 @@ public class ChatHandler {
 
         if (isServerMessage || senderBroadcastMode == BroadcastMode.LOCAL) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), senderRunePlayer.getRole(), sender.getUniqueId(), censoredMessage, receiversCount));
+                String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
+
+                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), senderPrefix, sender.getUniqueId(), censoredMessage, receiversCount));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
         }
@@ -105,7 +109,7 @@ public class ChatHandler {
             }
 
             // Distance colorizing
-            Component finalMessage = Component.text(censoredMessage).color(!isServerMessage ? TextUtils.getDistanceColor(distance, CHAT_DISTANCE_THRESHOLD) : NamedTextColor.WHITE);
+            Component finalMessage = Component.text(censoredMessage).color(!isServerMessage ? ChatTextUtils.getDistanceColor(distance, CHAT_DISTANCE_THRESHOLD) : NamedTextColor.WHITE);
 
             // Console logging
             if (viewer instanceof ConsoleCommandSender) {

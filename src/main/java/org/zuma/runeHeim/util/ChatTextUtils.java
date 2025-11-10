@@ -3,7 +3,7 @@ package org.zuma.runeHeim.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
-public class TextUtils {
+public class ChatTextUtils {
     public static TextColor getDistanceColor(double distance, double maxDistance) {
         // Clamp distance
         if (distance < 0) distance = 0;

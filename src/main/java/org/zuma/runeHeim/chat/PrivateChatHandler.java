@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.constants.Color;
 import org.zuma.examplePlugin.core.permissions.PlayerRole;
+import org.zuma.examplePlugin.core.utils.TextUtils;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.runeHeim.RuneHeimChat;
@@ -57,7 +58,7 @@ public class PrivateChatHandler {
         }
 
         String censoredMessage = ChatHandler.handleProfanityCensoring(content, runePlayer, sender);
-        Player localReceiverPlayer = PlayerUtils.getPlayerStartingWith(receiverName);
+        Player localReceiverPlayer = PlayerUtils.findPlayer(receiverName);
 
         // Local receiver found, send them message directly without broadcasting events
         if (localReceiverPlayer != null && localReceiverPlayer.isOnline()) {
@@ -99,8 +100,8 @@ public class PrivateChatHandler {
 
         Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
             UUID messageUUID = UUID.randomUUID();
-
-            RunePrivateChatSYNEvent chatEvent = new RunePrivateChatSYNEvent(new RunePrivateChatSYNEvent.Payload(sender.getName(), runePlayer.getRole(), sender.getUniqueId(), receiverName, censoredMessage, messageUUID));
+            String senderPrefix = TextUtils.extractPlainText(runePlayer.getRole().getPrefix());
+            RunePrivateChatSYNEvent chatEvent = new RunePrivateChatSYNEvent(new RunePrivateChatSYNEvent.Payload(sender.getName(), senderPrefix, sender.getUniqueId(), receiverName, censoredMessage, messageUUID));
             Bukkit.getServer().getPluginManager().callEvent(chatEvent);
 
             if (!pendingAcks.containsKey(sender.getUniqueId())) {
@@ -130,8 +131,8 @@ public class PrivateChatHandler {
     }
 
     // SYN received, deliver message to receiver
-    public static void onSYNPrivateChatEventReceived(int serverId, String senderName, PlayerRole senderRole, String senderUUID, String receiverName, String content, UUID messageUUID) {
-        Player receiverPlayer = PlayerUtils.getPlayerStartingWith(receiverName);
+    public static void onSYNPrivateChatEventReceived(int serverId, String senderName, String senderPrefix, String senderUUID, String receiverName, String content, UUID messageUUID) {
+        Player receiverPlayer = PlayerUtils.findPlayer(receiverName);
 
         // Receiver found, send them message
         if (receiverPlayer != null && receiverPlayer.isOnline()) {
@@ -141,7 +142,7 @@ public class PrivateChatHandler {
             receiverPlayer.sendMessage(Component.text()
                     .append(Template.PRIVATE_MESSAGE.component())
                     .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
-                    .append(senderRole.getPrefix())
+                    .append(Component.text(senderPrefix))
                     .append(Component.text(senderName, NamedTextColor.WHITE))
                     .append(Template.SEPARATOR.component())
                     .append(Component.text(content))
@@ -161,7 +162,9 @@ public class PrivateChatHandler {
                     .build());
 
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                RunePrivateChatACKEvent chatEvent = new RunePrivateChatACKEvent(new RunePrivateChatACKEvent.Payload(senderName, senderRole, UUID.fromString(senderUUID), receiverPlayer.getName(), receiverRunePlayer.getRole(), content, messageUUID, serverId));
+                String receiverPrefix = TextUtils.extractPlainText(receiverRunePlayer.getRole().getPrefix());
+
+                RunePrivateChatACKEvent chatEvent = new RunePrivateChatACKEvent(new RunePrivateChatACKEvent.Payload(senderName, senderPrefix, UUID.fromString(senderUUID), receiverPlayer.getName(), receiverPrefix, content, messageUUID, serverId));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
 
@@ -169,7 +172,7 @@ public class PrivateChatHandler {
     }
 
     // ACK received, notify original sender
-    public static void onACKPrivateChatEventReceived(int serverId, String originalMessageSender, PlayerRole senderRole, String receiverName, PlayerRole receiverRole, String content, UUID messageUUID) {
+    public static void onACKPrivateChatEventReceived(int serverId, String originalMessageSender, String senderPrefix, String receiverName, String receiverPrefix, String content, UUID messageUUID) {
         Player receiverPlayer = Bukkit.getPlayerExact(originalMessageSender);
 
         // Sender found, replay original message after it was delivered
@@ -179,7 +182,7 @@ public class PrivateChatHandler {
                     .append(Component.text("You", NamedTextColor.WHITE))
                     .append(Template.SEPARATOR.component())
                     .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
-                    .append(receiverRole.getPrefix())
+                    .append(Component.text(receiverPrefix))
                     .append(Component.text(receiverName, NamedTextColor.WHITE))
                     .append(Template.SEPARATOR.component())
                     .append(Component.text(content))
