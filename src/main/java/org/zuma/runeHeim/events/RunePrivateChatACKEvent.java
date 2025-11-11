@@ -1,7 +1,7 @@
 package org.zuma.runeHeim.events;
 
-import org.zuma.examplePlugin.core.permissions.PlayerRole;
 import org.zuma.examplePlugin.core.redis.RedisEvent;
+import org.zuma.runeHeim.chat.base.PlayerData;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,19 +14,15 @@ public class RunePrivateChatACKEvent extends RedisEvent<RunePrivateChatACKEvent.
     }
 
     public static class Payload extends RedisPayload {
-        public String senderName, senderPrefix, senderSupporterPrefix, receiverName, receiverPrefix, receiverSupporterPrefix, content;
-        public UUID senderUUID, messageUUID;
+        public PlayerData sender, receiver;
+        public String content;
+        public UUID messageUUID;
 
-        public Payload(String senderName, String senderPrefix, String senderSupporterPrefix, UUID senderUUID, String receiverName, String receiverPrefix, String receiverSupporterPrefix, String content, UUID messsageUUID, int targetServerId) {
-            this.senderName = senderName;
-            this.senderUUID = senderUUID;
-            this.senderPrefix = senderPrefix;
-            this.receiverName = receiverName;
-            this.receiverPrefix = receiverPrefix;
+        public Payload(PlayerData sender, PlayerData receiver, String content, UUID messsageUUID, int targetServerId) {
+            this.sender = sender;
+            this.receiver = receiver;
             this.content = content;
             this.messageUUID = messsageUUID;
-            this.receiverSupporterPrefix = receiverSupporterPrefix;
-            this.senderSupporterPrefix = senderSupporterPrefix;
             this.targetServers = List.of(targetServerId);
         }
     }

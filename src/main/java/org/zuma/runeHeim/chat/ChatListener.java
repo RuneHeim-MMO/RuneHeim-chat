@@ -10,10 +10,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.zuma.examplePlugin.RuneQuestPlugin;
-import org.zuma.examplePlugin.core.permissions.PlayerRole;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.examplePlugin.events.party.PartyMessageEvent;
 import org.zuma.runeHeim.RuneHeimChat;
+import org.zuma.runeHeim.chat.base.PlayerData;
 import org.zuma.runeHeim.chat.constants.Template;
 import org.zuma.runeHeim.chat.proximity.BroadcastMode;
 import org.zuma.runeHeim.chat.proximity.ProximityManager;
@@ -47,13 +47,13 @@ public class ChatListener implements Listener {
         PrivateChatHandler.clearPendingAcks(event.getPlayer().getUniqueId());
     }
 
-    public static void onGlobalChatEventReceived(int serverId, String senderName, String senderPrefix, String senderSupporterPrefix, String content) {
+    public static void onGlobalChatEventReceived(int serverId, PlayerData sender, String content) {
         Component message = Component.text()
                 .append(Template.GLOBAL_MESSAGE.component())
                 .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
-                .append(Component.text(senderSupporterPrefix))
-                .append(Component.text(senderPrefix))
-                .append(Component.text(senderName, NamedTextColor.WHITE))
+                .append(Component.text(sender.prefix().supporterPrefix()))
+                .append(Component.text(sender.prefix().prefix()))
+                .append(Component.text(sender.name(), NamedTextColor.WHITE))
                 .append(Template.SEPARATOR.component())
                 .append(Component.text(content))
                 .build();
@@ -65,17 +65,17 @@ public class ChatListener implements Listener {
         Bukkit.getConsoleSender().sendMessage(message);
     }
 
-    public static void onSpyEventReceived(int serverId, String senderName, String senderPrefix, String content, int viewersCount) {
+    public static void onSpyEventReceived(int serverId, PlayerData sender, String content, int viewersCount) {
         Bukkit.getOnlinePlayers().forEach(player -> {
-            if (senderName.equalsIgnoreCase(player.getName())) return;
+            if (sender.name().equalsIgnoreCase(player.getName())) return;
 
             SpyMode mode = RuneHeimChat.getProximityManager().getSpyMode(player.getUniqueId());
 
             if (mode == SpyMode.NETWORK) {
                 player.sendMessage(Component.text()
                         .append(Component.text("§9[SPY §d(#" + serverId + ", " + viewersCount + " viewers)§9] "))
-                        .append(Component.text(senderPrefix))
-                        .append(Component.text(senderName, NamedTextColor.WHITE))
+                        .append(Component.text(sender.prefix().prefix()))
+                        .append(Component.text(sender.name(), NamedTextColor.WHITE))
                         .append(Template.SEPARATOR.component())
                         .append(Component.text(content))
                         .build());

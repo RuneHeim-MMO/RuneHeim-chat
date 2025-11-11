@@ -16,6 +16,7 @@ import org.zuma.examplePlugin.core.utils.TextUtils;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.hud.HudService;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
+import org.zuma.runeHeim.chat.base.PlayerData;
 import org.zuma.runeHeim.chat.proximity.BroadcastMode;
 import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.chat.proximity.ProximityManager;
@@ -56,7 +57,7 @@ public class ChatHandler {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
                     String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
 
-                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), senderPrefix, senderRunePlayer.getRole().getSupporterRoleIcon() , sender.getUniqueId(), censoredMessage));
+                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
                 event.setCancelled(true);
@@ -87,7 +88,7 @@ public class ChatHandler {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
                 String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
 
-                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), senderPrefix, senderRunePlayer.getRole().getSupporterRoleIcon(), sender.getUniqueId(), censoredMessage, receiversCount));
+                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage, receiversCount));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
         }
