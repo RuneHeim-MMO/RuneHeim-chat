@@ -3,27 +3,32 @@ package org.zuma.runeHeim.chat;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.constants.Color;
+import org.zuma.examplePlugin.core.constants.SoundType;
 import org.zuma.examplePlugin.core.logger.constants.LogLevel;
 import org.zuma.examplePlugin.core.utils.MathUtils;
+import org.zuma.examplePlugin.core.utils.TextUtils;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.hud.HudService;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
+import org.zuma.runeHeim.chat.base.PlayerData;
 import org.zuma.runeHeim.chat.proximity.BroadcastMode;
 import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.chat.proximity.SpyMode;
 import org.zuma.runeHeim.events.RuneChatSpyEvent;
 import org.zuma.runeHeim.events.RuneGlobalChatBroadcastEvent;
+import org.zuma.runeHeim.events.RuneMegaphoneChatEvent;
 import org.zuma.runeHeim.util.HudUtils;
-import org.zuma.runeHeim.util.TextUtils;
+import org.zuma.runeHeim.util.ChatTextUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,11 +42,11 @@ public class ChatHandler {
             if (cooldownHandler.isCooldownInProgress(senderRunePlayer)) {
                 sender.sendMessage(Component.text("You are sending messages too quickly.", Color.ERROR.asColor()));
                 event.setCancelled(true);
-                cooldownHandler.startCooldown(senderRunePlayer, 2000L);
+                cooldownHandler.startCooldown(senderRunePlayer, 1500L);
                 return;
             }
 
-            cooldownHandler.startCooldown(senderRunePlayer, 2000L);
+            cooldownHandler.startCooldown(senderRunePlayer, 1500L);
         }
 
         BroadcastMode senderBroadcastMode = proximityManager.getBroadcastMode(sender.getUniqueId());
@@ -51,10 +56,38 @@ public class ChatHandler {
         String plainMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
         String censoredMessage = handleProfanityCensoring(plainMessage, senderRunePlayer, sender);
 
+        if (senderRunePlayer.isNextMessageMegaphone()) {
+            event.setCancelled(true);
+
+            Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
+                if (senderRunePlayer.getBombsContainer().getMegaphoneUses() == 0) {
+                    sender.sendMessage(
+                            Component.text("You don't have any megaphone uses left! Purchase more at our website: ")
+                                    .color(Color.ERROR.asColor())
+                                    .append(
+                                            Component.text("https://store.runeheim.org")
+                                                    .color(Color.SERVER_BRAND.asColor())
+                                                    .clickEvent(ClickEvent.openUrl("https://store.runeheim.org"))
+                                                    .hoverEvent(HoverEvent.showText(Component.text("Click to open the store")))
+                                    )
+                    );
+
+                    SoundType.FAIL_ACTION.play(senderRunePlayer, false);
+                    senderRunePlayer.setNextMessageMegaphone(false);
+                    return;
+                }
+                RuneMegaphoneChatEvent chatEvent = new RuneMegaphoneChatEvent(new RuneMegaphoneChatEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage));
+                Bukkit.getServer().getPluginManager().callEvent(chatEvent);
+                senderRunePlayer.setNextMessageMegaphone(false);
+                senderRunePlayer.getBombsContainer().setMegaphoneUses(senderRunePlayer.getBombsContainer().getMegaphoneUses() - 1);
+            });
+            return;
+        }
+
         switch (senderBroadcastMode) {
             case NETWORK -> {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(sender.getName(), senderRunePlayer.getRole(), sender.getUniqueId(), censoredMessage));
+                    RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
                 event.setCancelled(true);
@@ -83,7 +116,9 @@ public class ChatHandler {
 
         if (isServerMessage || senderBroadcastMode == BroadcastMode.LOCAL) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(sender.getName(), senderRunePlayer.getRole(), sender.getUniqueId(), censoredMessage, receiversCount));
+                String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
+
+                RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage, receiversCount));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
             });
         }
@@ -105,7 +140,7 @@ public class ChatHandler {
             }
 
             // Distance colorizing
-            Component finalMessage = Component.text(censoredMessage).color(!isServerMessage ? TextUtils.getDistanceColor(distance, CHAT_DISTANCE_THRESHOLD) : NamedTextColor.WHITE);
+            Component finalMessage = Component.text(censoredMessage).color(!isServerMessage ? ChatTextUtils.getDistanceColor(distance, CHAT_DISTANCE_THRESHOLD) : NamedTextColor.WHITE);
 
             // Console logging
             if (viewer instanceof ConsoleCommandSender) {

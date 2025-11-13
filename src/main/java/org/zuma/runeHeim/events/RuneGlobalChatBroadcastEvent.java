@@ -1,9 +1,7 @@
 package org.zuma.runeHeim.events;
 
-import org.zuma.examplePlugin.core.permissions.PlayerRole;
 import org.zuma.examplePlugin.core.redis.RedisEvent;
-
-import java.util.UUID;
+import org.zuma.runeHeim.chat.base.PlayerData;
 
 public class RuneGlobalChatBroadcastEvent extends RedisEvent<RuneGlobalChatBroadcastEvent.Payload> {
     private final Payload payload;
@@ -13,15 +11,11 @@ public class RuneGlobalChatBroadcastEvent extends RedisEvent<RuneGlobalChatBroad
     }
 
     public static class Payload extends RedisPayload {
-        public String senderName;
-        public PlayerRole senderRank;
-        public UUID senderUUID;
+        public PlayerData sender;
         public String content;
 
-        public Payload(String senderName, PlayerRole senderRank, UUID senderUUID, String content) {
-            this.senderName = senderName;
-            this.senderRank = senderRank;
-            this.senderUUID = senderUUID;
+        public Payload(PlayerData sender, String content) {
+            this.sender = sender;
             this.content = content;
         }
     }

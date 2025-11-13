@@ -1,0 +1,27 @@
+package org.zuma.runeHeim.events;
+
+import org.zuma.examplePlugin.core.redis.RedisEvent;
+import org.zuma.runeHeim.chat.base.PlayerData;
+
+public class RuneMegaphoneChatEvent extends RedisEvent<RuneMegaphoneChatEvent.Payload> {
+    private final Payload payload;
+
+    public RuneMegaphoneChatEvent(Payload payload) {
+        this.payload = payload;
+    }
+
+    public static class Payload extends RedisPayload {
+        public PlayerData sender;
+        public String content;
+
+        public Payload(PlayerData sender, String content) {
+            this.sender = sender;
+            this.content = content;
+        }
+    }
+
+    @Override
+    public Payload composePayload() {
+        return payload;
+    }
+}

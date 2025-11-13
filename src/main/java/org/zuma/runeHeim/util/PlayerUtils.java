@@ -12,4 +12,13 @@ public class PlayerUtils {
         }
         return null;
     }
+
+    public static Player findPlayer(String playerName) {
+        // Try exact match first
+        Player player = Bukkit.getPlayerExact(playerName);
+        if (player != null && player.isOnline()) return player;
+
+        // Fallback to partial match
+        return PlayerUtils.getPlayerStartingWith(playerName);
+    }
 }
