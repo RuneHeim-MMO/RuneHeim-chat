@@ -65,6 +65,24 @@ public class ChatListener implements Listener {
         Bukkit.getConsoleSender().sendMessage(message);
     }
 
+    public static void onMegaphoneEventReceived(int serverId, PlayerData sender, String content) {
+        Component message = Component.text()
+                .append(Template.MEGAPHONE.component())
+                .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 123, 0)))
+                .append(Component.text(sender.prefix().supporterPrefix()))
+                .append(Component.text(sender.prefix().prefix()))
+                .append(Component.text(sender.name(), NamedTextColor.WHITE))
+                .append(Template.SEPARATOR.component())
+                .append(Component.text(content))
+                .build();
+
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            player.sendMessage(message);
+        });
+
+        Bukkit.getConsoleSender().sendMessage(message);
+    }
+
     public static void onSpyEventReceived(int serverId, PlayerData sender, String content, int viewersCount) {
         Bukkit.getOnlinePlayers().forEach(player -> {
             if (sender.name().equalsIgnoreCase(player.getName())) return;

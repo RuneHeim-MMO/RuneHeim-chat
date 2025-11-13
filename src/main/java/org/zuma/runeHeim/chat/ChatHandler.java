@@ -3,6 +3,8 @@ package org.zuma.runeHeim.chat;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -10,6 +12,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.constants.Color;
+import org.zuma.examplePlugin.core.constants.SoundType;
 import org.zuma.examplePlugin.core.logger.constants.LogLevel;
 import org.zuma.examplePlugin.core.utils.MathUtils;
 import org.zuma.examplePlugin.core.utils.TextUtils;
@@ -23,6 +26,7 @@ import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.chat.proximity.SpyMode;
 import org.zuma.runeHeim.events.RuneChatSpyEvent;
 import org.zuma.runeHeim.events.RuneGlobalChatBroadcastEvent;
+import org.zuma.runeHeim.events.RuneMegaphoneChatEvent;
 import org.zuma.runeHeim.util.HudUtils;
 import org.zuma.runeHeim.util.ChatTextUtils;
 
@@ -52,11 +56,37 @@ public class ChatHandler {
         String plainMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
         String censoredMessage = handleProfanityCensoring(plainMessage, senderRunePlayer, sender);
 
+        if (senderRunePlayer.isNextMessageMegaphone()) {
+            event.setCancelled(true);
+
+            Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
+                if (senderRunePlayer.getBombsContainer().getMegaphoneUses() == 0) {
+                    sender.sendMessage(
+                            Component.text("You don't have any megaphone uses left! Purchase more at our website: ")
+                                    .color(Color.ERROR.asColor())
+                                    .append(
+                                            Component.text("https://store.runeheim.org")
+                                                    .color(Color.SERVER_BRAND.asColor())
+                                                    .clickEvent(ClickEvent.openUrl("https://store.runeheim.org"))
+                                                    .hoverEvent(HoverEvent.showText(Component.text("Click to open the store")))
+                                    )
+                    );
+
+                    SoundType.FAIL_ACTION.play(senderRunePlayer, false);
+                    senderRunePlayer.setNextMessageMegaphone(false);
+                    return;
+                }
+                RuneMegaphoneChatEvent chatEvent = new RuneMegaphoneChatEvent(new RuneMegaphoneChatEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage));
+                Bukkit.getServer().getPluginManager().callEvent(chatEvent);
+                senderRunePlayer.setNextMessageMegaphone(false);
+                senderRunePlayer.getBombsContainer().setMegaphoneUses(senderRunePlayer.getBombsContainer().getMegaphoneUses() - 1);
+            });
+            return;
+        }
+
         switch (senderBroadcastMode) {
             case NETWORK -> {
                 Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                    String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
-
                     RuneGlobalChatBroadcastEvent chatEvent = new RuneGlobalChatBroadcastEvent(new RuneGlobalChatBroadcastEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage));
                     Bukkit.getServer().getPluginManager().callEvent(chatEvent);
                 });
