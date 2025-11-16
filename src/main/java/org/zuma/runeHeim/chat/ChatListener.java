@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
+import org.zuma.examplePlugin.domain.player.settings.PlayerSetting;
 import org.zuma.examplePlugin.events.party.PartyMessageEvent;
 import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.chat.base.PlayerData;
@@ -76,8 +77,11 @@ public class ChatListener implements Listener {
                 .append(Component.text(content))
                 .build();
 
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            player.sendMessage(message);
+        RuneQuestPlugin.getPlayerManager().getOnlinePlayers().forEach(player -> {
+            if (!player.getSettings().getSetting(PlayerSetting.SHOW_MEGAPHONE_MESSAGES) && !sender.uuid().equals(player.getUUID()))
+                return;
+
+            player.asBukkitPlayer().sendMessage(message);
         });
 
         Bukkit.getConsoleSender().sendMessage(message);

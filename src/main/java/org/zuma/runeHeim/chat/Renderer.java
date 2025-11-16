@@ -23,8 +23,8 @@ public class Renderer {
         Component displayName = Component.text(namePlain);
         Component levelComponent = ChatTextUtils.getLevelGradientComponent(senderCmbLvl);
         Component partyComponent = Component.empty();
-        Component playerPrefix = !isPartyChat ? senderRunePlayer.getRole().getPrefix() : Component.empty();
-        Component supporterPrefix = !isPartyChat ? Component.text(senderRunePlayer.getRole().getSupporterRoleIcon()) : Component.empty();
+        Component playerPrefix = !isPartyChat ? senderRunePlayer.getRole().getPrefix(senderRunePlayer) : Component.empty();
+        Component supporterPrefix = !isPartyChat ? Component.text(senderRunePlayer.getRole().getSupporterRoleIcon(senderRunePlayer)) : Component.empty();
         NamedTextColor usernameColor = isPartyChat ? NamedTextColor.YELLOW : NamedTextColor.WHITE;
 
         if (viewer instanceof Player playerViewer) {

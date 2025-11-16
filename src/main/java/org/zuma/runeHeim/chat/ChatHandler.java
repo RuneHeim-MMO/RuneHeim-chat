@@ -116,7 +116,7 @@ public class ChatHandler {
 
         if (isServerMessage || senderBroadcastMode == BroadcastMode.LOCAL) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
-                String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix());
+                String senderPrefix = TextUtils.extractPlainText(senderRunePlayer.getRole().getPrefix(senderRunePlayer));
 
                 RuneChatSpyEvent chatEvent = new RuneChatSpyEvent(new RuneChatSpyEvent.Payload(PlayerData.fromPlayerData(senderRunePlayer), censoredMessage, receiversCount));
                 Bukkit.getServer().getPluginManager().callEvent(chatEvent);
