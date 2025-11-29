@@ -126,7 +126,7 @@ public class ChatHandler {
         if (receiversCount == 0) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
                 if (senderBroadcastMode == BroadcastMode.LOCAL) {
-                    HudService.sendInfoMessage(senderRunePlayer, Component.text("You are too far away from other players. Nobody can hear you."));
+                    HudService.sendInfoMessage(senderRunePlayer, Component.text("You are too far away. Nobody can hear you."));
                 }
             });
         }
