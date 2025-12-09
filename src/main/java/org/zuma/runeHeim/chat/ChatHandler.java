@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class ChatHandler {
     private final static CooldownHandler cooldownHandler = new CooldownHandler();
-    public final static int CHAT_DISTANCE_THRESHOLD = 255;
+    public final static int CHAT_DISTANCE_THRESHOLD = 2048;
 
     public static void handleChatEvent(AsyncChatEvent event, Player sender, RunePlayer senderRunePlayer, ProximityManager proximityManager) {
         if (!senderRunePlayer.asBukkitPlayer().hasPermission("runeheim.chat.cooldown")) {
