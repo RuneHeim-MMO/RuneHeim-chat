@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class ChatHandler {
     private final static CooldownHandler cooldownHandler = new CooldownHandler();
-    public final static int CHAT_DISTANCE_THRESHOLD = 255;
+    public final static int CHAT_DISTANCE_THRESHOLD = 2048;
 
     public static void handleChatEvent(AsyncChatEvent event, Player sender, RunePlayer senderRunePlayer, ProximityManager proximityManager) {
         if (!senderRunePlayer.asBukkitPlayer().hasPermission("runeheim.chat.cooldown")) {
@@ -126,7 +126,7 @@ public class ChatHandler {
         if (receiversCount == 0) {
             Bukkit.getScheduler().runTask(RuneHeimChat.getInstance(), () -> {
                 if (senderBroadcastMode == BroadcastMode.LOCAL) {
-                    HudService.sendInfoMessage(senderRunePlayer, Component.text("You are too far away from other players. Nobody can hear you."));
+                    HudService.sendInfoMessage(senderRunePlayer, Component.text("You are too far away. Nobody can hear you."));
                 }
             });
         }

@@ -1,5 +1,8 @@
 package org.zuma.runeHeim.chat;
 
+import org.zuma.examplePlugin.RuneQuestPlugin;
+import org.zuma.examplePlugin.core.logger.constants.LogLevel;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,7 +41,7 @@ public class ProfanityFilter {
      */
     public static void loadConfigs() {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new URL("https://docs.google.com/spreadsheets/d/1hIEi2YG3ydav1E06Bzf2mQbGZ12kh2fe4ISgLg_UBuM/export?format=csv")
+                new URL("https://docs.google.com/spreadsheets/d/172h_u-J9RnIA23Ym6RUCaJCE-8bmGsMpX6GLgubmlvE/export?format=csv")
                         .openConnection().getInputStream()))) {
             String line;
             int count = 0;
@@ -54,7 +57,7 @@ public class ProfanityFilter {
                 flag(word, ignore);
                 count++;
             }
-            System.out.println("Loaded " + count + " bad words");
+            RuneQuestPlugin.getRuneLogger().log(LogLevel.INFO, "[ProfanityFilter] Loaded " + count + " bad words for profanity filter.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -185,5 +188,5 @@ public class ProfanityFilter {
             return Arrays.copyOf(a, size);
         }
     }
-    
+
 }

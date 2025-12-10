@@ -31,7 +31,7 @@ public class HudUtils {
         ));
         SoundType.FAIL_ACTION.play(player.asBukkitPlayer(), false);
 
-        Bukkit.getScheduler().runTaskLater(RuneHeimChat.getInstance(), () -> {
+       /* Bukkit.getScheduler().runTaskLater(RuneHeimChat.getInstance(), () -> {
             if (!bukkitPlayer.isOnline()) return;
 
             bukkitPlayer.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 5, 255, false, false, false));
@@ -45,7 +45,7 @@ public class HudUtils {
 
             bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f);
 
-        }, 130L);
+        }, 130L); */
     }
 
 }
