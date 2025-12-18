@@ -43,4 +43,4 @@ jobs:
     steps:
       - name: Send HTTP POST to Minecraft Hook
         run: |
-          curl --max-time 30 -X POST "http://65.21.193.214:81/restart?key=${{ secrets.WEB_HOOK_SECRET }}&seconds=300&reason=Chat%20Update&sender=Github_actions"
+          curl --max-time 30 -X POST "http://runeheim-hook.3uma.dev:81/restart?key=${{ secrets.WEB_HOOK_SECRET }}&seconds=300&reason=Chat%20Update&sender=Github_actions"
