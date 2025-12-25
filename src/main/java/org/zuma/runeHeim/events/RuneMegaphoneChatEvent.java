@@ -10,6 +10,11 @@ public class RuneMegaphoneChatEvent extends RedisEvent<RuneMegaphoneChatEvent.Pa
         this.payload = payload;
     }
 
+    @Override
+    public Payload composePayload() {
+        return payload;
+    }
+
     public static class Payload extends RedisPayload {
         public PlayerData sender;
         public String content;
@@ -18,10 +23,5 @@ public class RuneMegaphoneChatEvent extends RedisEvent<RuneMegaphoneChatEvent.Pa
             this.sender = sender;
             this.content = content;
         }
-    }
-
-    @Override
-    public Payload composePayload() {
-        return payload;
     }
 }

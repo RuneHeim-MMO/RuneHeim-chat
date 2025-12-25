@@ -7,16 +7,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class ProfanityFilter {
 
     // store bad words as normalized lower-case strings (no spaces)
     private static final Map<String, String[]> badWords = new HashMap<>();
-    private static int largestWordLength = 0;
-
     // leetspeak map: char in input -> normalized letter
     private static final Map<Character, Character> LEET_MAP = new HashMap<>();
+    private static int largestWordLength = 0;
 
     static {
         LEET_MAP.put('0', 'o');

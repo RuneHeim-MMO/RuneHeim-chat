@@ -2,10 +2,10 @@ package org.zuma.runeHeim;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.logger.constants.LogLevel;
 import org.zuma.examplePlugin.core.redis.GlobalEventHandler;
 import org.zuma.runeHeim.chat.ChatListener;
-import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.runeHeim.chat.ProfanityFilter;
 import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.commands.ChatCommand;
@@ -16,6 +16,14 @@ import org.zuma.runeHeim.redis.RedisHandler;
 public final class RuneHeimChat extends JavaPlugin {
     private static RuneHeimChat pluginInstance;
     private ProximityManager proximityManager;
+
+    public static ProximityManager getProximityManager() {
+        return pluginInstance.proximityManager;
+    }
+
+    public static RuneHeimChat getInstance() {
+        return pluginInstance;
+    }
 
     @Override
     public void onEnable() {
@@ -47,13 +55,5 @@ public final class RuneHeimChat extends JavaPlugin {
     public void onDisable() {
         GlobalEventHandler.clearHandlers();
         RuneQuestPlugin.getRuneLogger().log(LogLevel.INFO, "Chat disabled.");
-    }
-
-    public static ProximityManager getProximityManager() {
-        return pluginInstance.proximityManager;
-    }
-
-    public static RuneHeimChat getInstance() {
-        return pluginInstance;
     }
 }

@@ -29,25 +29,6 @@ public class ChatListener implements Listener {
         this.proximityManager = proximityManager;
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onAsyncChat(AsyncChatEvent event) {
-        Player sender = event.getPlayer();
-        RunePlayer senderRunePlayer = RuneQuestPlugin.getPlayerManager().getRunePlayer(sender);
-
-        if (senderRunePlayer == null) {
-            event.setCancelled(true);
-            return;
-        }
-
-        ChatHandler.handleChatEvent(event, sender, senderRunePlayer, proximityManager);
-
-    }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        PrivateChatHandler.clearPendingAcks(event.getPlayer().getUniqueId());
-    }
-
     public static void onGlobalChatEventReceived(int serverId, PlayerData sender, String content) {
         Component message = Component.text()
                 .append(Template.GLOBAL_MESSAGE.component())
@@ -103,6 +84,25 @@ public class ChatListener implements Listener {
                         .build());
             }
         });
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onAsyncChat(AsyncChatEvent event) {
+        Player sender = event.getPlayer();
+        RunePlayer senderRunePlayer = RuneQuestPlugin.getPlayerManager().getRunePlayer(sender);
+
+        if (senderRunePlayer == null) {
+            event.setCancelled(true);
+            return;
+        }
+
+        ChatHandler.handleChatEvent(event, sender, senderRunePlayer, proximityManager);
+
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        PrivateChatHandler.clearPendingAcks(event.getPlayer().getUniqueId());
     }
 
     @EventHandler

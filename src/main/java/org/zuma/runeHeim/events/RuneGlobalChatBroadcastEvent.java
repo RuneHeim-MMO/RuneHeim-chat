@@ -10,6 +10,11 @@ public class RuneGlobalChatBroadcastEvent extends RedisEvent<RuneGlobalChatBroad
         this.payload = payload;
     }
 
+    @Override
+    public Payload composePayload() {
+        return payload;
+    }
+
     public static class Payload extends RedisPayload {
         public PlayerData sender;
         public String content;
@@ -18,10 +23,5 @@ public class RuneGlobalChatBroadcastEvent extends RedisEvent<RuneGlobalChatBroad
             this.sender = sender;
             this.content = content;
         }
-    }
-
-    @Override
-    public Payload composePayload() {
-        return payload;
     }
 }

@@ -12,6 +12,12 @@ public class RunePrivateChatSYNEvent extends RedisEvent<RunePrivateChatSYNEvent.
         this.payload = payload;
     }
 
+    @Override
+    public Payload composePayload() {
+        this.payload.replayAtOrigin = false;
+        return payload;
+    }
+
     public static class Payload extends RedisPayload {
         public PlayerData sender, receiver;
         public String content, receiverName;
@@ -23,11 +29,5 @@ public class RunePrivateChatSYNEvent extends RedisEvent<RunePrivateChatSYNEvent.
             this.content = content;
             this.messageUUID = messsageUUID;
         }
-    }
-
-    @Override
-    public Payload composePayload() {
-        this.payload.replayAtOrigin = false;
-        return payload;
     }
 }

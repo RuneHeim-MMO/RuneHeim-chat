@@ -10,6 +10,11 @@ public class RuneChatSpyEvent extends RedisEvent<RuneChatSpyEvent.Payload> {
         this.payload = payload;
     }
 
+    @Override
+    public Payload composePayload() {
+        return payload;
+    }
+
     public static class Payload extends RedisPayload {
         public PlayerData sender;
         public String content;
@@ -20,10 +25,5 @@ public class RuneChatSpyEvent extends RedisEvent<RuneChatSpyEvent.Payload> {
             this.content = content;
             this.viewers = viewers;
         }
-    }
-
-    @Override
-    public Payload composePayload() {
-        return payload;
     }
 }

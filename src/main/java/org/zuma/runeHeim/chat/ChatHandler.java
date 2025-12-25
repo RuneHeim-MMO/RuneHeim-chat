@@ -19,23 +19,25 @@ import org.zuma.examplePlugin.core.utils.TextUtils;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.hud.HudService;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
+import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.chat.base.PlayerData;
 import org.zuma.runeHeim.chat.proximity.BroadcastMode;
-import org.zuma.runeHeim.RuneHeimChat;
 import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.chat.proximity.SpyMode;
 import org.zuma.runeHeim.events.RuneChatSpyEvent;
 import org.zuma.runeHeim.events.RuneGlobalChatBroadcastEvent;
 import org.zuma.runeHeim.events.RuneMegaphoneChatEvent;
-import org.zuma.runeHeim.util.HudUtils;
 import org.zuma.runeHeim.util.ChatTextUtils;
+import org.zuma.runeHeim.util.HudUtils;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ChatHandler {
-    private final static CooldownHandler cooldownHandler = new CooldownHandler();
     public final static int CHAT_DISTANCE_THRESHOLD = 2048;
+    private final static CooldownHandler cooldownHandler = new CooldownHandler();
 
     public static void handleChatEvent(AsyncChatEvent event, Player sender, RunePlayer senderRunePlayer, ProximityManager proximityManager) {
         if (!senderRunePlayer.asBukkitPlayer().hasPermission("runeheim.chat.cooldown")) {
