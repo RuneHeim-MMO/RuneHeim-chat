@@ -2,17 +2,10 @@ package org.zuma.runeHeim.util;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.zuma.examplePlugin.core.constants.Color;
 import org.zuma.examplePlugin.core.constants.SoundType;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
-import org.zuma.runeHeim.RuneHeimChat;
-import org.zuma.runeHeim.chat.StrikeHandler;
 
 import java.time.Duration;
 

@@ -6,8 +6,8 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.core.constants.Color;
-import org.zuma.runeHeim.chat.proximity.BroadcastMode;
 import org.zuma.runeHeim.RuneHeimChat;
+import org.zuma.runeHeim.chat.proximity.BroadcastMode;
 import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.chat.proximity.SpyMode;
 

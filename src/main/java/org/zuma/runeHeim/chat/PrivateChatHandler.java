@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.zuma.examplePlugin.RuneQuestPlugin;
 import org.zuma.examplePlugin.core.constants.Color;
-import org.zuma.examplePlugin.core.utils.TextUtils;
 import org.zuma.examplePlugin.domain.cooldown.CooldownHandler;
 import org.zuma.examplePlugin.domain.player.RunePlayer;
 import org.zuma.runeHeim.RuneHeimChat;

@@ -13,6 +13,11 @@ public class RunePrivateChatACKEvent extends RedisEvent<RunePrivateChatACKEvent.
         this.payload = payload;
     }
 
+    @Override
+    public Payload composePayload() {
+        return payload;
+    }
+
     public static class Payload extends RedisPayload {
         public PlayerData sender, receiver;
         public String content;
@@ -25,10 +30,5 @@ public class RunePrivateChatACKEvent extends RedisEvent<RunePrivateChatACKEvent.
             this.messageUUID = messsageUUID;
             this.targetServers = List.of(targetServerId);
         }
-    }
-
-    @Override
-    public Payload composePayload() {
-        return payload;
     }
 }

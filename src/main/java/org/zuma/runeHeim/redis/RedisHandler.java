@@ -1,7 +1,6 @@
 package org.zuma.runeHeim.redis;
 
 import org.zuma.examplePlugin.core.redis.GlobalEventHandler;
-import org.zuma.runeHeim.chat.ChatHandler;
 import org.zuma.runeHeim.chat.ChatListener;
 import org.zuma.runeHeim.chat.PrivateChatHandler;
 import org.zuma.runeHeim.events.*;
