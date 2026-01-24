@@ -11,6 +11,7 @@ import org.zuma.runeHeim.chat.proximity.ProximityManager;
 import org.zuma.runeHeim.commands.ChatCommand;
 import org.zuma.runeHeim.commands.MsgCommand;
 import org.zuma.runeHeim.commands.ReplyCommand;
+import org.zuma.runeHeim.commands.StaffChatCommand;
 import org.zuma.runeHeim.redis.RedisHandler;
 
 public final class RuneHeimChat extends JavaPlugin {
@@ -46,6 +47,9 @@ public final class RuneHeimChat extends JavaPlugin {
 
         pluginInstance.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
                 event -> event.registrar().register("r", new ReplyCommand()));
+
+        pluginInstance.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
+                event -> event.registrar().register("s", new StaffChatCommand()));
 
 
         RuneQuestPlugin.getRuneLogger().log(LogLevel.INFO, "Chat initialized.");

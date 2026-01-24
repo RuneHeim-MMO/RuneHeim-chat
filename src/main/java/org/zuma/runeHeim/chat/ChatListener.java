@@ -47,6 +47,24 @@ public class ChatListener implements Listener {
         Bukkit.getConsoleSender().sendMessage(message);
     }
 
+    public static void onStaffChatEventReceived(int serverId, PlayerData sender, String content) {
+        Component message = Component.text()
+                .append(Template.STAFF_MESSAGE.component())
+                .append(Component.text("[#" + serverId + "] ", TextColor.color(255, 85, 0)))
+                .append(Component.text(sender.prefix().supporterPrefix()))
+                .append(Component.text(sender.prefix().prefix()))
+                .append(Component.text(sender.name(), NamedTextColor.WHITE))
+                .append(Template.SEPARATOR.component())
+                .append(Component.text(content))
+                .build();
+
+        RuneQuestPlugin.getPlayerManager().getOnlinePlayers().stream().filter(player -> player.asBukkitPlayer().hasPermission("runeheim.admin.chat")).forEach(player -> {
+            player.asBukkitPlayer().sendMessage(message);
+        });
+
+        Bukkit.getConsoleSender().sendMessage(message);
+    }
+
     public static void onMegaphoneEventReceived(int serverId, PlayerData sender, String content) {
         Component message = Component.text()
                 .append(Template.MEGAPHONE.component())
