@@ -13,6 +13,7 @@ public class RedisHandler {
         GlobalEventHandler.registerEvent(RuneMegaphoneChatEvent.class, RuneMegaphoneChatEvent.Payload.class);
         GlobalEventHandler.registerEvent(RunePrivateChatACKEvent.class, RunePrivateChatACKEvent.Payload.class);
         GlobalEventHandler.registerEvent(RunePrivateChatSYNEvent.class, RunePrivateChatSYNEvent.Payload.class);
+        GlobalEventHandler.registerEvent(RuneAdminChatBroadcastEvent.class, RuneAdminChatBroadcastEvent.Payload.class);
 
         GlobalEventHandler.addListener(RuneChatSpyEvent.class, payload -> {
             ChatListener.onSpyEventReceived(payload.serverId, payload.sender, payload.content, payload.viewers);
@@ -26,6 +27,9 @@ public class RedisHandler {
             ChatListener.onMegaphoneEventReceived(payload.serverId, payload.sender, payload.content);
         });
 
+        GlobalEventHandler.addListener(RuneAdminChatBroadcastEvent.class, payload -> {
+            ChatListener.onStaffChatEventReceived(payload.serverId, payload.sender, payload.content);
+        });
 
         GlobalEventHandler.addListener(RunePrivateChatSYNEvent.class, payload -> {
             PrivateChatHandler.onSYNPrivateChatEventReceived(payload.serverId, payload.sender, payload.receiverName, payload.content, payload.messageUUID);

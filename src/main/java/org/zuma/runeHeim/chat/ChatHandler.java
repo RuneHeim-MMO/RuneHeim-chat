@@ -36,7 +36,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ChatHandler {
-    public final static int CHAT_DISTANCE_THRESHOLD = 2048;
+    public final static int CHAT_DISTANCE_THRESHOLD = 10048;
     private final static CooldownHandler cooldownHandler = new CooldownHandler();
 
     public static void handleChatEvent(AsyncChatEvent event, Player sender, RunePlayer senderRunePlayer, ProximityManager proximityManager) {
