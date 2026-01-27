@@ -10,6 +10,7 @@ public enum Template {
     PRIVATE_MESSAGE(Component.text("[PM] ", TextColor.color(77, 128, 240))),
     GLOBAL_MESSAGE(Component.text("[Global] ", TextColor.color(255, 85, 0))),
     STAFF_MESSAGE(Component.text("[Staff] ", TextColor.color(193, 112, 255))),
+    STAFF_HELP_MESSAGE(Component.text("[Staff-Help] ", TextColor.color(235, 23, 118))),
     MEGAPHONE(Component.text("[Megaphone] ", TextColor.color(255, 123, 0))),
     SERVER_MESSAGE(Component.text("[Server] ", NamedTextColor.RED)),
     PARTY_MESSAGE(Icon.PARTY.asComponent().append(Component.text("[Party] ", NamedTextColor.YELLOW))),
