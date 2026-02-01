@@ -14,6 +14,7 @@ public class RedisHandler {
         GlobalEventHandler.registerEvent(RunePrivateChatACKEvent.class, RunePrivateChatACKEvent.Payload.class);
         GlobalEventHandler.registerEvent(RunePrivateChatSYNEvent.class, RunePrivateChatSYNEvent.Payload.class);
         GlobalEventHandler.registerEvent(RuneAdminChatBroadcastEvent.class, RuneAdminChatBroadcastEvent.Payload.class);
+        GlobalEventHandler.registerEvent(StaffHelpChatBroadcastEvent.class, StaffHelpChatBroadcastEvent.Payload.class);
 
         GlobalEventHandler.addListener(RuneChatSpyEvent.class, payload -> {
             ChatListener.onSpyEventReceived(payload.serverId, payload.sender, payload.content, payload.viewers);
@@ -29,6 +30,10 @@ public class RedisHandler {
 
         GlobalEventHandler.addListener(RuneAdminChatBroadcastEvent.class, payload -> {
             ChatListener.onStaffChatEventReceived(payload.serverId, payload.sender, payload.content);
+        });
+
+        GlobalEventHandler.addListener(StaffHelpChatBroadcastEvent.class, payload -> {
+            ChatListener.onStaffHelpChatEventReceived(payload.serverId, payload.sender, payload.content);
         });
 
         GlobalEventHandler.addListener(RunePrivateChatSYNEvent.class, payload -> {
